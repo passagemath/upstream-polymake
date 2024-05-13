@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -48,8 +48,8 @@ BigObject lattice_of_chains(BigObject lattice_obj)
 UserFunctionTemplate4perl("# @category Combinatorics"
                           "# For a given lattice, this computes the lattice of chains from bottom to top node."
                           "# The result always includes an artificial top node."
-                          "# @param Lattice<Decoration> lattice"
-                          "# @return Lattice<BasicDecoration> Faces are sets of nodes of elements in the original"
+                          "# @param PartiallyOrderedSet<Decoration> lattice"
+                          "# @return PartiallyOrderedSet<BasicDecoration> Faces are sets of nodes of elements in the original"
                           "# lattice forming a chain, ranks are lengths of chains"
                           "# @example [application polytope] The following prints all faces with their ranks of the lattice of"
                           "# chains of the face lattice of the 0-simplex (a single point):"
@@ -63,11 +63,11 @@ UserFunctionTemplate4perl("# @category Combinatorics"
 
 UserFunctionTemplate4perl("# @category Combinatorics"
                           "# Computes the set of maximal chains of a lattice."
-                          "# @param Lattice F"
+                          "# @param PartiallyOrderedSet F"
                           "# @option Bool ignore_bottom_node If true, the bottom node is not included in the chains. False by default"
                           "# @option Bool ignore_top_node If true, the top node is not included in the chains. False by default"
                           "# @return IncidenceMatrix Each row is a maximal chain, "
-                          "# indices refer to nodes of the Lattice"
+                          "# indices refer to nodes of the partially ordered set"
                           "# @example [application polytope] [prefer cdd] The following prints all maximal chains of the face lattice of the"
                           "# 1-simplex (an edge):"
                           "# > print maximal_chains_of_lattice(simplex(1)->HASSE_DIAGRAM);"

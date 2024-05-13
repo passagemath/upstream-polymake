@@ -1,3 +1,31 @@
+=== polymake 4.12 ===
+
+-- general --
+  * some fixes for jupyter interface
+
+-- fan --
+  * fix min_weights for trivial subdivisions
+
+-- graph --
+  * rename Lattice to PartiallyOrderedSet
+     - keeping compatibility aliases
+  * fixes for maximal_chains
+  * new client: maximal_ranked_poset
+
+-- polytope --
+  * improve order and chain polytope
+  * new clients: metric cone and metric polytope
+
+-- topaz --
+  * many Nevo-Santos-Wilson triangulated spheres:
+     - new property CONSTRUCTIBILITY
+     - new clients bistellar_d_sphere, bipyramidal_3_sphere
+     - check of constructibility in many cases
+  * SimplicialComples: add SHIFTED property
+
+-- tropical --
+  * Hypersurface: add homogeneity checks
+
 === polymake 4.11 ===
 
 -- distribution --

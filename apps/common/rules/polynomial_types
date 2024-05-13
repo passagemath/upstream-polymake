@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -42,6 +42,10 @@ declare property_type Polynomial<Coefficient=Rational, Exponent=Int> \
    # The degree of the polynomial
    # @return Int
    user_method deg() : c++;
+
+   # Check if the polynomial is homogeneous
+   # @return Bool
+   user_method homogeneous() : c++;
 
    # The exponent of the leading monomial.
    # @return Int

@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -65,8 +65,8 @@ UserFunctionTemplate4perl("# @category Combinatorics"
                           "# This takes two lattices and checks whether they are isomorphic, possibly after applying"
                           "# a permutation to the faces. This function only compares faces and ranks of nodes to determine"
                           "# isomorphism"
-                          "# @param Lattice L1 A lattice"
-                          "# @param Lattice L2 Another lattice, having the same decoration and sequential type"
+                          "# @param PartiallyOrderedSet L1 A lattice"
+                          "# @param PartiallyOrderedSet L2 Another lattice, having the same decoration and sequential type"
                           "# @param Permutation permutation A permutation to be applied to the faces. If empty, "
                           "# the identity permutation is chosen"
                           "# @return Permutation A permutation on the nodes of the graph, or undef if the lattices are not isomorphic.",

@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -109,6 +109,22 @@ Sequential::nodes_of_rank_type InverseRankMap<Sequential>::nodes_of_rank_range(I
     return Sequential::nodes_of_rank_type(lower_bound, upper_bound-lower_bound+1);
   }
   return Sequential::nodes_of_rank_type();
+}
+
+template<>
+template<>
+InverseRankMap<Nonsequential>::InverseRankMap(const InverseRankMap<Nonsequential>& other) : inverse_rank_map(other.inverse_rank_map) {}
+
+template<>
+template<>
+InverseRankMap<Sequential>::InverseRankMap(const InverseRankMap<Sequential>& other) : inverse_rank_map(other.inverse_rank_map) {}
+
+template<>
+template<>
+InverseRankMap<Nonsequential>::InverseRankMap(const InverseRankMap<Sequential>& other) {
+  for (const auto& kv_pair : other.get_map()) {
+    inverse_rank_map[kv_pair.first] = Nonsequential::make_map_value_type(kv_pair.second);
+  }
 }
 
 } } }

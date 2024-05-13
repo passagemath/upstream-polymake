@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -236,22 +236,24 @@ public:
       arg.next->data=(void *)idCopy(J);
       // call primdecSY
       BOOLEAN res=iiMake_proc(sathdl, nullptr ,&arg);
-      if(!res && (iiRETURNEXPR.Typ() == LIST_CMD)){
-         lists L = (lists)iiRETURNEXPR.Data();
-         SingularIdeal_wrap* result;
-         if(L->m[0].Typ() == IDEAL_CMD){
-            result = new SingularIdeal_impl((::ideal) (L->m[0].Data()),singRing);
-         } else {
-            throw std::runtime_error("Something went wrong for the primary decomposition");
+      if(!res) {
+         ::ideal iddata = nullptr;
+         if (iiRETURNEXPR.Typ() == LIST_CMD) {
+            lists L = (lists)iiRETURNEXPR.Data();
+            if(L->m[0].Typ() == IDEAL_CMD)
+               iddata = (::ideal) L->m[0].Data();
+         } else if (iiRETURNEXPR.Typ() == IDEAL_CMD) {
+            iddata = (::ideal) iiRETURNEXPR.Data();
          }
-         iiRETURNEXPR.CleanUp();
-         iiRETURNEXPR.Init();
-         return result;
-      } else {
-         iiRETURNEXPR.Init();
-         throw std::runtime_error("Something went wrong for the saturation");
+         if (iddata != nullptr) {
+            SingularIdeal_wrap* result = new SingularIdeal_impl(iddata, singRing);
+            iiRETURNEXPR.CleanUp();
+            iiRETURNEXPR.Init();
+            return result;
+         }
       }
-
+      iiRETURNEXPR.Init();
+      throw std::runtime_error("saturation: unable to parse ideal from return value");
    }
 
    Array<SingularIdeal_wrap*> primary_decomposition() const

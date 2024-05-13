@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -85,10 +85,10 @@ user_function mcf.otp: optimal_transport_plan<Scalar>[Scalar == Int || Scalar ==
 	close($filePipe);
 
 	if ($Verbose::external) {
-		dbg_print( "running mcf: $mcf -o -w $tempname.out $tempname.in" );
+		dbg_print( "running mcf: $mcf -q -o -w $tempname.out $tempname.in" );
 	}
-	system("$mcf -o -w $tempname.out $tempname.in".(!$DebugLevel && " >/dev/null 2>&1"))
-		and die "couldn't run mcf: $mcf -o -w $tempname.out $tempname.in\n";
+	system("$mcf -q -o -w $tempname.out $tempname.in".(!$DebugLevel && " >/dev/null 2>&1"))
+		and die "couldn't run mcf: $mcf -q -o -w $tempname.out $tempname.in\n";
 
 	open(my $outfile, "<", "$tempname.out")
 		or die "can't open output file $tempname.out: $!";

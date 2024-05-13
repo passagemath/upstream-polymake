@@ -15,5 +15,6 @@
   {"args": ["perl::AnchorArg<perl::Canned<Wary<Matrix<double>>>>", "void"], "func": "col", "include": ["polymake/IncidenceMatrix.h", "polymake/Matrix.h"], "kind": "meth", "ret": "lvalue", "sig": "col:F:M14.x"},
   {"args": ["perl::AnchorArg<perl::Canned<Wary<Matrix<Int>>&>>", "void"], "func": "col", "include": ["polymake/IncidenceMatrix.h", "polymake/Matrix.h"], "kind": "meth", "ret": "lvalue", "sig": "col:F:M14.x"},
   {"args": ["perl::AnchorArg<perl::Canned<const Wary<Matrix<QuadraticExtension<Rational>>>&>>", "void"], "func": "col", "include": ["polymake/IncidenceMatrix.h", "polymake/Matrix.h", "polymake/QuadraticExtension.h", "polymake/Rational.h"], "kind": "meth", "ret": "lvalue", "sig": "col:F:M14.x"},
+  {"args": ["perl::AnchorArg<perl::Canned<const Wary<pm::BlockMatrix<mlist<pm::RepeatedRow<pm::Vector<double> const&> const, pm::Matrix<double> const&>, std::integral_constant<bool, true> >>&>>", "void"], "func": "col", "include": ["polymake/IncidenceMatrix.h", "polymake/Matrix.h", "polymake/Vector.h"], "kind": "meth", "ret": "lvalue", "sig": "col:F:M14.x"},
  null ],
 "version": 3}

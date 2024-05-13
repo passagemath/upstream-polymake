@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -457,12 +457,13 @@ class PolyDBCollection {
       bson_error_t error;
 
       size_t n = docstring_array.size();
-      bson_t * documents[n];  // = (const bson_t **)malloc(sizeof(bson_t *)*n);
+      bson_t** documents = (bson_t **) malloc(sizeof(bson_t *)*n);
       for ( size_t i = 0; i < n; ++i ) {
         documents[i] = bson_new_from_json((unsigned char *)docstring_array[i].c_str(),-1,&error); 
         if ( !documents[i] ) {
           for ( size_t j = 0; j < i; ++j )
              bson_destroy(documents[j]);
+          free(documents);
           throw std::runtime_error(prepare_error_message(error,"bson_creation"));
         }
       }
@@ -475,6 +476,7 @@ class PolyDBCollection {
         bson_destroy(&reply);
         for ( size_t i = 0; i < n; ++i )
            bson_destroy(documents[i]);
+        free(documents);
         throw std::runtime_error(prepare_error_message(error,name_));
       }
 
@@ -492,6 +494,7 @@ class PolyDBCollection {
             bson_destroy(&reply);
             for ( size_t i = 0; i < n; ++i )
                bson_destroy(documents[i]);
+            free(documents);
             throw std::runtime_error(message);
           }
         }
@@ -500,6 +503,7 @@ class PolyDBCollection {
       for ( size_t i = 0; i < n; ++i ) {
         bson_destroy(documents[i]);
       }
+      free(documents);
       bson_destroy(&reply);
 
       return inserted_count;

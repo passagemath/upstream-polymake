@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -1151,7 +1151,7 @@ sub process_object_decl {
 
       if (defined($alias)) {
          push @{$self->buffer},
-              $preamble."{ my \$symtab=get_symtab((typeof $alias)->pkg); *application::$type_name\::=\$symtab; }\n";
+              $preamble."{ my \$symtab=get_symtab((typeof_gen $alias)->pkg); *application::$type_name\::=\$symtab; }\n";
 
       } else {
          # defining a new object type

@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -216,9 +216,9 @@ user_method VISUAL(%Visual::Graph::decorations, { seed => undef }) : ADJACENCY {
 ###############################################################################
 
 # @category Visualization
-object Lattice {
+object PartiallyOrderedSet {
 
-# Visualize the Lattice.
+# Visualize the partially ordered set.
 # @category Visualization
 # @options %Visual::Lattice::decorations
 # @option Int seed random seed value for the node placement
@@ -249,7 +249,7 @@ user_method VISUAL(%Visual::Lattice::decorations, { seed => undef }) {
    visualize($VL);
 }
 
-# Visualize the dual Lattice.
+# Visualize the dual partially ordered set
 # @category Visualization
 # This only produces meaningful results for lattice where the
 # codimension one nodes generate the lattice under intersection.

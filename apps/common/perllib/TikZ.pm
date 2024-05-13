@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -347,7 +347,7 @@ sub drawAllPoints {
     my $npoints = @{$self->source->Vertices};
     my @idlist = defined($pointset) ? @$pointset : (0..$npoints-1);
     if ($self->source->Vertices->cols == 3) {
-        my $z = (defined($trans) ? $points * $trans->minor(~[0],~[0]) : $points)->col(2);
+        my $z = new Vector<Float>((defined($trans) ? $points * $trans->minor(~[0],~[0]) : $points)->col(2));
         @idlist = sort { $z->[$b] <=> $z->[$a] } @idlist;
     }
     return $self->pointsToString(\@idlist);

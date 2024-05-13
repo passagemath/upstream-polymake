@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -37,6 +37,8 @@
 */
 
 #pragma once
+
+#include <vector>
 
 namespace polymake {
 
@@ -121,7 +123,7 @@ class ReverseSearchTemplate {
          while (1)
          {
             Int Delta = v.get_Delta();
-            Int children[Delta];
+            std::vector<Int> children(Delta);
             num = 0;
             j=-1;
             while (j<Delta){

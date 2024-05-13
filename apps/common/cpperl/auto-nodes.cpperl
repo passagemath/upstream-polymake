@@ -4,5 +4,6 @@
   {"args": ["perl::AnchorArg<perl::Canned<const Graph<Undirected>&>>"], "func": "nodes", "include": ["polymake/Graph.h"], "sig": "nodes:R_Container.X8"},
   {"args": ["perl::Canned<const Graph<Undirected>&>"], "func": "nodes", "include": ["polymake/Graph.h"], "kind": "meth", "sig": "nodes:M"},
   {"args": ["perl::Canned<const Graph<Directed>&>"], "func": "nodes", "include": ["polymake/Graph.h"], "kind": "meth", "sig": "nodes:M"},
+  {"args": ["perl::AnchorArg<perl::Canned<const Graph<Directed>&>>"], "func": "nodes", "include": ["polymake/Graph.h"], "sig": "nodes:R_Container.X8"},
  null ],
 "version": 3}

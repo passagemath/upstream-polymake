@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -51,8 +51,7 @@ property HILBERT_BASIS_GENERATORS : Array<Matrix<Integer>> {
 
 }
 
-
-object Polytope<Rational> {
+object Polytope {
 
 # @category Lattice points in polytopes
 # The lattice points in the polytope.
@@ -108,6 +107,16 @@ property INTERIOR_LATTICE_POINTS : Matrix<Integer> {
 # The number of [[INTERIOR_LATTICE_POINTS]]
 property N_INTERIOR_LATTICE_POINTS : Integer;
 
+# @category Lattice points in cones
+# One direction which realizes [[LATTICE_WIDTH]] of the polytope.
+    property LATTICE_WIDTH_DIRECTION : Vector<Integer>;
+
+# @category Lattice points in cones
+# The minimal width of the polytope.
+    property LATTICE_WIDTH : Scalar;
+}
+
+object Polytope<Rational> {
 
 # @category Geometry
 # The cone of all Minkowski summands of the polytope P.
@@ -230,14 +239,6 @@ object_specialization Polytope::Lattice {
 # The polytope is __very ample__ if the Hilbert Basis of the cone spanned by the edge-directions of any vertex lies inside the polytope.
 # @depends 4ti2 or libnormaliz
     property VERY_AMPLE : Bool;
-
-# @category Lattice points in cones
-# One direction which realizes [[LATTICE_WIDTH]] of the polytope.
-    property LATTICE_WIDTH_DIRECTION : Vector<Integer>;
-
-# @category Lattice points in cones
-# The minimal integral width of the polytope.
-    property LATTICE_WIDTH : Integer;
 
 }
 

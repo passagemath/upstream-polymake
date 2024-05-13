@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -646,6 +646,11 @@ public:
    explicit operator AccurateFloat() const
    {
       return AccurateFloat(a_) + sqrt(AccurateFloat(r_)) * AccurateFloat(b_);
+   }
+
+   bool is_integral() const noexcept
+   {
+      return a_.is_integral() && b_.is_zero();
    }
 
    template <typename Output>

@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -26,6 +26,7 @@ declare property_type Nonsequential : c++(special => 'graph::lattice::Nonsequent
 
 # @category Combinatorics
 # Mapping of lattice nodes to their ranks.
+# A "rank map" for our purpose is any assignment of natural numbers to the elements of a poset such that the (total) ordering of the numbers refines the (partial) ordering of the corresponding elements.
 # @tparam SeqType tag describing node order, must be [[Sequential]] or [[Nonsequential]].
 declare property_type InverseRankMap<SeqType> : c++ (name=>"graph::lattice::InverseRankMap", include=>"polymake/graph/Decoration.h") {
 
@@ -57,18 +58,19 @@ declare property_type InverseRankMap<SeqType> : c++ (name=>"graph::lattice::Inve
 }
 
 # @category Combinatorics
-# Minimal required data associated with [[Lattice]] nodes.
+# Minimal required data associated with [[PartiallyOrderedSet]] nodes.
 # @field Set<Int> face face represented by the node
 # @field Int rank node rank
 declare property_type BasicDecoration : c++ (name=>"graph::lattice::BasicDecoration", include=>"polymake/graph/Decoration.h");
 
 
 # @category Combinatorics
-# A Lattice is a poset where join and meet exist for any two elements.
+# A PartiallyOrderedSet is a poset where join and meet exist for any two elements.
 # It is realized as a directed graph.
+# Some implementations currently restricted to ranked posets (will be fixed soon™).
 # @tparam Decoration additional data associated with each node.  Should be derived from [[BasicDecoration]].
 # @tparam SeqType tag describing the node ordering, should be [[Sequential]] or [[Nonsequential]].
-declare object Lattice<Decoration, SeqType = Nonsequential> [isa(Decoration, BasicDecoration)] : Graph<Directed> {
+declare object PartiallyOrderedSet<Decoration, SeqType = Nonsequential> [isa(Decoration, BasicDecoration)] : Graph<Directed> {
 
    # @category Combinatorics
    # This is the data associated to each node. The prototype for this is [[BasicDecoration]],
@@ -87,16 +89,18 @@ declare object Lattice<Decoration, SeqType = Nonsequential> [isa(Decoration, Bas
 
    # @category Combinatorics
    # This property provides an efficient way to enumerate all nodes of a given rank.
-   # Internally these are realized differently, depending on whether the Lattice
+   # Internally these are realized differently, depending on whether the PartiallyOrderedSet
    # is [[Sequential]] or [[Nonsequential]].
    # Both provide the same user methods though.
+   # Notice that this function is necessary for technical reasons (for any PartiallyOrderedSet, even if it has maximal chains of various lengths).
+   # In fact, a "rank map" for our purpose is any assignment of natural numbers to the elements of a poset such that the (total) ordering of the numbers refines the (partial) ordering of the corresponding elements.
    # @example [application polytope] [prefer cdd] [require bundled:cdd] The following prints this property of the face lattice of the 2-simplex (triangle), where the tuples represent the ranges of nodes belonging to a specific rank:
    # > print simplex(2)->HASSE_DIAGRAM->INVERSE_RANK_MAP;
    # | {(0 (0 0)) (1 (1 3)) (2 (4 6)) (3 (7 7))}
    property INVERSE_RANK_MAP : InverseRankMap<SeqType>;
 
    rule INVERSE_RANK_MAP : ADJACENCY, DECORATION {
-     my $irm = new InverseRankMap<Nonsequential>();
+     my $irm = new InverseRankMap<SeqType>();
      for my $i (@{nodes($this->ADJACENCY)}) { $irm->set_rank($i, $this->DECORATION->[$i]->rank) }
      $this->INVERSE_RANK_MAP = $irm;
    }
@@ -138,7 +142,7 @@ declare object Lattice<Decoration, SeqType = Nonsequential> [isa(Decoration, Bas
    property DIMS : Array<Int>;
 
    # @category Combinatorics
-   # Maximal chains (without top and bottom).
+   # Maximal chains
    property MAXIMAL_CHAINS : Array<Set<Int>>;
 
    rule MAXIMAL_CHAINS : ADJACENCY, DECORATION, INVERSE_RANK_MAP {
@@ -156,7 +160,7 @@ declare object Lattice<Decoration, SeqType = Nonsequential> [isa(Decoration, Bas
    }
    
    # @category Combinatorics
-   # Maximal anti-chains (without top and bottom).
+   # Maximal anti-chains
    property MAXIMAL_ANTI_CHAINS : Array<Set<Int>>;
 
    rule MAXIMAL_ANTI_CHAINS : COMPARABILITY_GRAPH {
@@ -165,11 +169,10 @@ declare object Lattice<Decoration, SeqType = Nonsequential> [isa(Decoration, Bas
      my $CG = new Graph<Undirected>(ADJACENCY=>$this->COMPARABILITY_GRAPH);
      my $mc = new Array<Set<Int>>(max_cliques(complement_graph($CG)->ADJACENCY));
      my $n = $mc->size();
-     # index shift by +1; see COMPARABILITY_GRAPH
      for (my $i=0; $i<$n; ++$i) {
        my $this_set = new Set<Int>();
        for (my $e=entire($mc->[$i]); $e; ++$e) {
-         $this_set += ($$e)+1;
+         $this_set += ($$e);
        }
        $mc->[$i] = $this_set;
      }
@@ -232,8 +235,12 @@ declare object Lattice<Decoration, SeqType = Nonsequential> [isa(Decoration, Bas
 
 }
 
-# A [[Lattice]] with a [[BasicDecoration]], which corresponds to the legacy HasseDiagram type
-declare object_specialization BasicLattice<SeqType> = Lattice<BasicDecoration, SeqType> {
+# @category Combinatorics
+# Backwards compatibility alias for [[PartiallyOrderedSet]]
+declare object Lattice = PartiallyOrderedSet;
+
+# A [[PartiallyOrderedSet]] with a [[BasicDecoration]], which corresponds to the legacy HasseDiagram type
+declare object_specialization Basic<SeqType> = PartiallyOrderedSet<BasicDecoration, SeqType> {
 
    rule DECORATION, INVERSE_RANK_MAP, TOP_NODE, BOTTOM_NODE : FACES, DIMS, ADJACENCY {
       #Backwards compatibility rule

@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -48,7 +48,7 @@ Vector<Int> cut_vector(const graph_type& G, const Set<Int>& cut)
 BigObject fractional_cut_polytope(const graph_type& G)
 {
    if (!graph::is_connected(G) )
-      throw std::runtime_error("cut_polytope: input graph must be connected");
+      throw std::runtime_error("fractional_cut_polytope: input graph must be connected");
 
    const Int n_nodes = G.nodes();
    const Int n_edges = G.edges();

@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -799,6 +799,8 @@ public:
 
   Exponent deg() const { return impl_ptr->deg(); }
   Exponent lower_deg() const { return impl_ptr->lower_deg(); }
+
+  bool homogeneous() const { return impl_ptr->homogeneous(); }
 
   Polynomial lt() const { return Polynomial(impl_ptr->lt()); }
 

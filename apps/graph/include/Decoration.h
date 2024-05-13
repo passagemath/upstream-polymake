@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -78,7 +78,8 @@ protected:
 
 public:
   InverseRankMap() {}
-  InverseRankMap(const InverseRankMap& other) : inverse_rank_map(other.inverse_rank_map) {}
+  template <typename OtherSeq, typename = typename std::enable_if_t<std::is_same<SeqType, Nonsequential>::value || std::is_same<OtherSeq, Sequential>::value>>
+  explicit InverseRankMap(const InverseRankMap<OtherSeq>& other);
 
   typename SeqType::nodes_of_rank_ref_type nodes_of_rank(Int d) const;
   typename SeqType::nodes_of_rank_type nodes_of_rank_range(Int d1, Int d2) const;
@@ -104,7 +105,6 @@ public:
 
   const Map<Int, typename SeqType::map_value_type >& get_map() const { return inverse_rank_map; }
 };
-
 
 // This is the basic data attached to a lattice node: Its face and its rank.
 struct BasicDecoration : public GenericStruct<BasicDecoration> {

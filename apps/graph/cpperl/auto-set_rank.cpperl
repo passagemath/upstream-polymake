@@ -1,0 +1,5 @@
+{"app": "graph",
+ "inst": [
+  {"args": ["perl::Canned<graph::lattice::InverseRankMap<graph::lattice::Sequential>&>", "void", "void"], "func": "set_rank", "include": ["polymake/graph/Decoration.h"], "kind": "meth", "sig": "set_rank:M1.x.x"},
+ null ],
+"version": 3}

@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -23,6 +23,7 @@
 #include "polymake/Set.h"
 #include "polymake/Matrix.h"
 #include "polymake/Rational.h"
+#include "polymake/FacetList.h"
 
 #include <string>
 
@@ -44,11 +45,9 @@ Array<Set<Int>> maximal_chains(const Lattice<Decoration, SeqType>& HD, bool igno
    const Int bottom_index = HD.bottom_node();
 
    // each old facet is divided into at least (dim+1)! cells, with equality iff the object is simplicial.
-   // since we don't know the size beforehand, we use a std::vector instead of an Array.
    // each facet of the barycentric subdivision is a flag in the input face lattice HD,
    // stored as the set of node indices of the constituent faces in HD
-   std::vector<Set<Int>> facets;
-   facets.reserve(HD.nodes_of_rank(total_rank-1).size() * Int(Integer::fac(dim+1)));
+   FacetList facets;
 
    using out_edge = Graph<Directed>::out_edge_list::const_iterator;
    using stack_type = std::vector<out_edge>;  // vector is more efficient than list
@@ -82,14 +81,8 @@ Array<Set<Int>> maximal_chains(const Lattice<Decoration, SeqType>& HD, bool igno
          if (!ignore_top_node || s->to_node() != top_index)
             facet += s->to_node();
       }
-      facets.push_back(facet);
-      if (facets.size() > 1 &&
-          facets[0].size() != facet.size()) {
-         cerr << "maximal chains of different length:\n"
-              << facets[0] << "\n"
-              << facet << endl;
-         throw std::runtime_error("stop");
-      }
+      if (facet.size() > 0)
+         facets.insertMax(facet);
 
       
       // depth-first search to the next facet

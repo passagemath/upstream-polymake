@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -46,7 +46,7 @@ UserFunctionTemplate4perl("# @category Tropical operations"
                           "# computes the VIF of a monomial tropical cone "
                           "# given by generators "
                           "# @param Matrix M the exponent vectors of the generators. "
-                          "# @return Lattice<BasicDecoration, Nonsequential>",
+                          "# @return PartiallyOrderedSet<BasicDecoration, Nonsequential>",
                           "monomial_cone_lattice(Matrix)");
     
 FunctionTemplate4perl("monoextremals(Matrix, Matrix, Vector)");

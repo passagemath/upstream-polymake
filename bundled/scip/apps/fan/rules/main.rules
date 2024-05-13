@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -19,11 +19,11 @@ object SubdivisionOfVectors {
 rule scip.milp: MIN_WEIGHTS : VECTORS, MAXIMAL_CELLS {
     my $n_vectors = $this->VECTORS->rows();
     my $secT = $this->secondary_cone(); # no normalization etc
-    my $secTineqs = new Matrix<Rational>(primitive($secT->INEQUALITIES));
+    my $secTineqs = new Matrix<Rational>(primitive($secT->give("FACETS|INEQUALITIES")));
     my $minus_ones = new Vector<Rational>(-ones_vector<Rational>($secTineqs->rows()));
     my $positive_orthant = zero_vector<Rational>|unit_matrix<Rational>($n_vectors);
     my $ineqs = ($minus_ones|$secTineqs) / $positive_orthant; # shifted ineqs intersected with positive orthant
-    my $eqs = zero_vector<Rational> | $secT->EQUATIONS;
+    my $eqs = zero_vector<Rational> | $secT->give("LINEAR_SPAN|EQUATIONS");
     my $ilp = new polytope::MixedIntegerLinearProgram<Rational>(LINEAR_OBJECTIVE=>(0|ones_vector<Rational>($n_vectors)));
     my $secTilp = new polytope::Polytope(INEQUALITIES=>$ineqs, EQUATIONS=>$eqs, MILP=>$ilp);
     $secTilp->apply_rule("scip.milp: MILP.MINIMAL_VALUE, MILP.MINIMAL_SOLUTION : MILP.LINEAR_OBJECTIVE, FACETS | INEQUALITIES");

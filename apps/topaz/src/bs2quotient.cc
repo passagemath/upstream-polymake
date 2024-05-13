@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -292,7 +292,7 @@ UserFunction4perl("# @category Producing a new simplicial complex from others"
 
 UserFunction4perl("# @category Other"
                   "# Create the list of faces of the second barycentric subdivision"
-                  "# @param Lattice L (for example, a HASSE_DIAGRAM)"
+                  "# @param PartiallyOrderedSet L (for example, a HASSE_DIAGRAM)"
                   "# @return Pair<Array<Set>,Array<Set<Set>>>",
                   &second_barycentric_subdivision_from_HD,
                   "second_barycentric_subdivision(Lattice<BasicDecoration,Sequential>)");

@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -192,7 +192,7 @@ user_method VISUAL(%Visual::Polygons::decorations, %geometric_options_linear, {C
       my $maximal_cone=$_;
       my $ftr = transpose($ind->[$i]->minor(All, $maximal_cone));
 
-      my $cone = new polytope::Cone<Rational>(
+      my $cone = new polytope::Cone<Scalar>(
           RAYS => $this->RAYS->minor($maximal_cone,All),
           FACETS_THRU_RAYS => $ftr,
           LINEALITY_SPACE => $this->LINEALITY_SPACE);
@@ -201,7 +201,7 @@ user_method VISUAL(%Visual::Polygons::decorations, %geometric_options_linear, {C
       $i++;
    }
    visualize(new Visual::PolyhedralFan( Name => "fan:".$this->name,
-                                        PolyhedralFan => new PolyhedralFan(RAYS=>(ones_vector<Float>() | $rays)),
+                                        PolyhedralFan => $this,
                                         @cells_visual));
 }
 precondition : FAN_AMBIENT_DIM { $this->FAN_AMBIENT_DIM<=3 }

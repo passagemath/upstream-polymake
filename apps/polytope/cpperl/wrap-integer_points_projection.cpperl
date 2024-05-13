@@ -1,0 +1,6 @@
+{"app": "polytope", "embed": "integer_points_projection.cc",
+ "inst": [
+  {"args": ["Rational", "void", "void"], "func": "integer_points_projection", "include": ["polymake/Rational.h"], "sig": "integer_points_projection:T1.B.x", "tp": 1},
+  {"args": ["QuadraticExtension<Rational>", "void", "void"], "func": "integer_points_projection", "include": ["polymake/QuadraticExtension.h", "polymake/Rational.h"], "sig": "integer_points_projection:T1.B.x", "tp": 1},
+ null ],
+"version": 3}

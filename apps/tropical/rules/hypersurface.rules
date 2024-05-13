@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -32,6 +32,14 @@ property MONOMIALS : Matrix<Int>;
 # compatible with the order of [[MONOMIALS]].
 
 property COEFFICIENTS : Vector<TropicalNumber<Addition>>;
+
+
+rule initial: POLYNOMIAL {
+  croak("\ninvalid input: MONOMIALS / POLYNOMIAL must be homogeneous")
+    unless $this->POLYNOMIAL->homogeneous();
+}
+precondition : exists(MONOMIALS | POLYNOMIAL);
+
 
 # permuting [[MONOMIALS]] and [[COEFFICIENTS]]
 permutation TermPerm : PermBase;

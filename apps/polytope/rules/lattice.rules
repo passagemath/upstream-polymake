@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -153,8 +153,7 @@ object Cone<Rational> {
 
 }
 
-
-object Polytope<Rational> {
+object Polytope {
 
     rule N_LATTICE_POINTS : LATTICE_POINTS_GENERATORS {
         $this->N_LATTICE_POINTS = $this->LATTICE_POINTS_GENERATORS->[0]->rows;
@@ -206,6 +205,68 @@ object Polytope<Rational> {
     }
     weight 0.1;
 
+    rule LATTICE_WIDTH, LATTICE_WIDTH_DIRECTION : VERTICES | POINTS, LINEALITY_SPACE, CONE_AMBIENT_DIM {
+       my $direction = unit_vector($this->CONE_AMBIENT_DIM,1);
+       my $lp=$this->LP(LINEAR_OBJECTIVE=>$direction, temporary);
+       my $sched = $lp->get_schedule("MAXIMAL_VALUE","MINIMAL_VALUE");
+       $sched->apply($lp);
+       my $width=$lp->MAXIMAL_VALUE - $lp->MINIMAL_VALUE;
+
+       # we need LINEALITY_SPACE and VERTICES because of minkowski_sum.
+       my $half_space = unit_vector<Scalar>($this->CONE_AMBIENT_DIM,1) + (0|(ones_vector<Scalar>($this->CONE_AMBIENT_DIM-1)/$width));
+       my $S=new Polytope<Scalar>(INEQUALITIES=>(scale(polarize(minkowski_sum(1,$this, -1,$this)),$width)->FACETS)/$half_space);
+       my $B=$S->LATTICE_POINTS;
+
+       for (my $i=0; $i<$B->rows(); ++$i) {
+           my $current_direction = 0 | primitive($B->row($i)->slice(range_from(1)));
+           next if is_zero($current_direction); #because 0 is a stupid direction
+
+           $lp=$this->LP(LINEAR_OBJECTIVE=>$current_direction, temporary);
+
+           $sched->apply($lp);
+
+           my $current_width=$lp->MAXIMAL_VALUE-$lp->MINIMAL_VALUE;
+
+           if ($current_width<$width){
+               $width=$current_width;
+               $direction=$current_direction;
+           }
+       }
+       $this->LATTICE_WIDTH=$width;
+       $this->LATTICE_WIDTH_DIRECTION=$direction;
+    }
+    precondition : FULL_DIM;
+    weight 5.50;
+
+    # @category Lattice points in polytopes
+    # Returns the lattice points in bounded Polytopes.
+    # @return Matrix<Integer>
+    user_method LATTICE_POINTS {
+      my $p = shift;
+      if (!($p->BOUNDED)) { die "input polytope must be bounded" }
+      return $p->LATTICE_POINTS_GENERATORS->[0];
+    }
+
+
+label projection
+
+    rule projection.integer_points : LATTICE_POINTS_GENERATORS : FACETS , AFFINE_HULL , VERTICES_IN_FACETS , VERTICES , CONE_AMBIENT_DIM , CONE_DIM {
+        $this->LATTICE_POINTS_GENERATORS = [integer_points_projection($this,0), new Matrix(0,$this->CONE_AMBIENT_DIM),new Matrix(0,$this->CONE_AMBIENT_DIM)];
+    }
+    precondition : BOUNDED;
+    weight 5.10;
+
+label bbox
+
+    rule bbox.integer_points : LATTICE_POINTS_GENERATORS : FACETS | INEQUALITIES , AFFINE_HULL | EQUATIONS, CONE_AMBIENT_DIM {
+        $this->LATTICE_POINTS_GENERATORS = [integer_points_bbox($this), new Matrix(0,$this->CONE_AMBIENT_DIM), new Matrix(0,$this->CONE_AMBIENT_DIM)];
+    }
+    precondition : BOUNDED;
+    weight 5.20;
+}
+
+object Polytope<Rational> {
+
     rule LATTICE_POINTS_GENERATORS : HILBERT_BASIS_GENERATORS, CONE_AMBIENT_DIM {
         $this->LATTICE_POINTS_GENERATORS = [ [ grep { $_->[0] == 1 } @{$this->HILBERT_BASIS_GENERATORS->[0]} ], new Matrix(0,$this->CONE_AMBIENT_DIM),new Matrix(0,$this->CONE_AMBIENT_DIM)];
     }
@@ -246,15 +307,6 @@ object Polytope<Rational> {
     }
     precondition : CONE_DIM { $this->CONE_DIM > 2; }
 
-    # @category Lattice points in polytopes
-    # Returns the lattice points in bounded Polytopes.
-    # @return Matrix<Integer>
-    user_method LATTICE_POINTS {
-      my $p = shift;
-      if (!($p->BOUNDED)) { die "input polytope must be bounded" }
-      return $p->LATTICE_POINTS_GENERATORS->[0];
-    }
-
     # @category Geometry
     # returns the Minkowski summand of a polytope P given by
     # a coefficient vector to the rays of the [[MINKOWSKI_CONE]].
@@ -291,23 +343,6 @@ object Polytope<Rational> {
     weight 0.10;
     override : SUPER::cone_only;
 
-
-label projection
-
-    rule projection.integer_points : LATTICE_POINTS_GENERATORS : FACETS , AFFINE_HULL , VERTICES_IN_FACETS , VERTICES , CONE_AMBIENT_DIM , CONE_DIM {
-        $this->LATTICE_POINTS_GENERATORS = [integer_points_projection($this,0), new Matrix(0,$this->CONE_AMBIENT_DIM),new Matrix(0,$this->CONE_AMBIENT_DIM)];
-    }
-    precondition : BOUNDED;
-    weight 5.10;
-
-
-label bbox
-
-    rule bbox.integer_points : LATTICE_POINTS_GENERATORS : FACETS | INEQUALITIES , AFFINE_HULL | EQUATIONS, CONE_AMBIENT_DIM {
-        $this->LATTICE_POINTS_GENERATORS = [integer_points_bbox($this), new Matrix(0,$this->CONE_AMBIENT_DIM), new Matrix(0,$this->CONE_AMBIENT_DIM)];
-    }
-    precondition : BOUNDED;
-    weight 5.20;
 }
 
 
@@ -790,38 +825,6 @@ object_specialization Polytope::Lattice {
     }
     weight 0.1;
 
-    rule LATTICE_WIDTH, LATTICE_WIDTH_DIRECTION : VERTICES | POINTS, LINEALITY_SPACE, CONE_AMBIENT_DIM {
-       my $direction = unit_vector($this->CONE_AMBIENT_DIM,1);
-       my $lp=$this->LP(LINEAR_OBJECTIVE=>$direction, temporary);
-       my $sched = $lp->get_schedule("MAXIMAL_VALUE","MINIMAL_VALUE");
-       $sched->apply($lp);
-       my $width=$lp->MAXIMAL_VALUE - $lp->MINIMAL_VALUE;
-
-       # we need LINEALITY_SPACE and VERTICES because of minkowski_sum.
-       my $half_space = unit_vector($this->CONE_AMBIENT_DIM,1) + (0|(ones_vector($this->CONE_AMBIENT_DIM-1)/$width));
-       my $S=new Polytope(INEQUALITIES=>(scale(polarize(minkowski_sum(1,$this, -1,$this)),$width)->FACETS)/$half_space);
-       my $B=$S->LATTICE_POINTS;
-
-       for (my $i=0; $i<$B->rows(); ++$i) {
-           my $current_direction = 0 | primitive($B->row($i)->slice(range_from(1)));
-           next if is_zero($current_direction); #because 0 is a stupid direction
-
-           $lp=$this->LP(LINEAR_OBJECTIVE=>$current_direction, temporary);
-
-           $sched->apply($lp);
-
-           my $current_width=$lp->MAXIMAL_VALUE-$lp->MINIMAL_VALUE;
-
-           if ($current_width<$width){
-               $width=$current_width;
-               $direction=$current_direction;
-           }
-       }
-       $this->LATTICE_WIDTH=$width;
-       $this->LATTICE_WIDTH_DIRECTION=$direction;
-    }
-    precondition : FULL_DIM;
-    weight 5.50;
 
     rule FOLDABLE_COCIRCUIT_EQUATIONS : COMBINATORIAL_DIM, RAYS, RAYS_IN_FACETS, INTERIOR_RIDGE_SIMPLICES, MAX_INTERIOR_SIMPLICES {
        $this->FOLDABLE_COCIRCUIT_EQUATIONS = foldable_cocircuit_equations($this->COMBINATORIAL_DIM, $this->RAYS, $this->RAYS_IN_FACETS, $this->INTERIOR_RIDGE_SIMPLICES, $this->MAX_INTERIOR_SIMPLICES);

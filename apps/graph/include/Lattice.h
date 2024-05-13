@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -30,7 +30,7 @@ namespace polymake { namespace graph {
 using lattice::InverseRankMap;
 
 /*
- * A Lattice is a decorated lattice of subsets of a finite set E ={0,..,n-1}, which is realized
+ * A PartiallyOrderedSet is a decorated lattice of subsets of a finite set E ={0,..,n-1}, which is realized
  * as a directed graph. Here i -> j means i is covered by j.
  * It is templated by two paramters:
  * 1) Decoration: This is arbitrary data attached to each node. It is assumed that every node has two
@@ -42,7 +42,14 @@ using lattice::InverseRankMap;
  *    In this case, the inverse rank map is serialized in a more efficient manner.
  */
 template <typename Decoration, typename SeqType = lattice::Nonsequential>
-class Lattice {
+class PartiallyOrderedSet;
+
+// for backwards compatibility
+template <typename Decoration, typename SeqType = lattice::Nonsequential>
+using Lattice = PartiallyOrderedSet<Decoration,SeqType>;
+
+template <typename Decoration, typename SeqType>
+class PartiallyOrderedSet {
 
 protected:
   Graph<Directed> G;
@@ -57,9 +64,9 @@ public:
   using nodes_of_rank_ref_type = typename SeqType::nodes_of_rank_ref_type;
   using nodes_of_rank_type = typename SeqType::nodes_of_rank_type;
 
-  Lattice() : D(G) {}
+  PartiallyOrderedSet() : D(G) {}
 
-  Lattice(const Lattice<Decoration, SeqType>& l)
+  PartiallyOrderedSet(const PartiallyOrderedSet<Decoration, SeqType>& l)
     : G(l.graph())
     , D(G, entire(l.D))
     , rank_map(l.rank_map)
@@ -67,9 +74,9 @@ public:
     , bottom_node_index(l.bottom_node()) {}
 
   // Copies all but the top node
-  friend Lattice<Decoration, SeqType> copy_all_but_top_node(const Lattice<Decoration, SeqType>& me)
+  friend PartiallyOrderedSet<Decoration, SeqType> copy_all_but_top_node(const PartiallyOrderedSet<Decoration, SeqType>& me)
   {
-    Lattice<Decoration, SeqType> l(me);
+    PartiallyOrderedSet<Decoration, SeqType> l(me);
     if (l.nodes() > 1)
       l.top_node_index = *(l.in_adjacent_nodes(l.top_node_index).begin());
     l.G.delete_node(me.top_node_index);
@@ -123,9 +130,9 @@ public:
   Int nodes() const { return G.nodes(); }
   Int edges() const { return G.edges(); }
 
-  friend const Nodes<Graph<Directed>>& nodes(const Lattice<Decoration, SeqType>& me) { return pm::nodes(me.G); }
-  friend const Edges<Graph<Directed>>& edges(const Lattice<Decoration, SeqType>& me) { return pm::edges(me.G); }
-  friend const AdjacencyMatrix<Graph<Directed>>& adjacency_matrix(const Lattice<Decoration, SeqType>& me) { return pm::adjacency_matrix(me.G); }
+  friend const Nodes<Graph<Directed>>& nodes(const PartiallyOrderedSet<Decoration, SeqType>& me) { return pm::nodes(me.G); }
+  friend const Edges<Graph<Directed>>& edges(const PartiallyOrderedSet<Decoration, SeqType>& me) { return pm::edges(me.G); }
+  friend const AdjacencyMatrix<Graph<Directed>>& adjacency_matrix(const PartiallyOrderedSet<Decoration, SeqType>& me) { return pm::adjacency_matrix(me.G); }
 
   bool node_exists(Int n) const { return G.node_exists(n); }
   bool edge_exists(Int n1, Int n2) const { return G.edge_exists(n1,n2); }
@@ -208,7 +215,7 @@ public:
   // TODO: introduce operator ... && moving all members
   explicit operator BigObject () const
   {
-     return BigObject("Lattice", mlist<Decoration, SeqType>(),
+     return BigObject("PartiallyOrderedSet", mlist<Decoration, SeqType>(),
                       "ADJACENCY", graph(),
                       "DECORATION", decoration(),
                       "INVERSE_RANK_MAP", rank_map,
@@ -216,17 +223,17 @@ public:
                       "BOTTOM_NODE", bottom_node());
   }
 
-  explicit Lattice(const BigObject& obj)
+  explicit PartiallyOrderedSet(const BigObject& obj)
     : D(G)
   {
      *this = obj;
   }
 
-  Lattice& operator= (const BigObject& obj)
+  PartiallyOrderedSet& operator= (const BigObject& obj)
   {
      // TODO: include is_trusted flag in BigObject?
-     // if (obj.get_flags() * pm::perl::ValueFlags::not_trusted && !obj.isa("Lattice"))
-     //   throw std::runtime_error("wrong object type for Lattice");
+     // if (obj.get_flags() * pm::perl::ValueFlags::not_trusted && !obj.isa("PartiallyOrderedSet"))
+     //   throw std::runtime_error("wrong object type for PartiallyOrderedSet");
      obj.give("ADJACENCY") >> G;
      obj.give("DECORATION") >> D;
      obj.give("INVERSE_RANK_MAP") >> rank_map;
@@ -241,7 +248,7 @@ public:
 namespace pm { namespace perl {
 
 template <typename Decoration, typename SeqType>
-struct represents_BigObject<polymake::graph::Lattice<Decoration, SeqType>> : std::true_type {};
+struct represents_BigObject<polymake::graph::PartiallyOrderedSet<Decoration, SeqType>> : std::true_type {};
 
 } }
 

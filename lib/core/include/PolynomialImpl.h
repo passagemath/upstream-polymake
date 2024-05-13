@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -524,6 +524,19 @@ public:
     for (auto it = entire(get_terms()); !it.at_end(); ++it)
       assign_min(low, Monomial::deg(it->first));
     return low;
+  }
+
+  bool homogeneous() const {
+    if (trivial())
+      return true;
+    const auto& terms = get_terms();
+    auto t = terms.begin();
+    typename Monomial::exponent_type pdeg = Monomial::deg(t->first);
+    while (++t != terms.end()) {
+      if (Monomial::deg(t->first) != pdeg)
+        return false;
+    }
+    return true;
   }
 
   // leading term

@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -100,11 +100,11 @@ user_method secondary_cone(%secondary_cone_options) : VECTORS, MAXIMAL_CELLS {
 rule MIN_WEIGHTS : VECTORS, MAXIMAL_CELLS {
     my $n_vectors = $this->VECTORS->rows();
     my $secT = $this->secondary_cone(); # no normalization etc
-    my $secTineqs = new Matrix<Rational>(primitive($secT->INEQUALITIES));
+    my $secTineqs = new Matrix<Rational>(primitive($secT->give("FACETS|INEQUALITIES")));
     my $minus_ones = new Vector<Rational>(-ones_vector<Rational>($secTineqs->rows()));
     my $positive_orthant = zero_vector<Rational>|unit_matrix<Rational>($n_vectors);
     my $ineqs = ($minus_ones|$secTineqs) / $positive_orthant; # shifted ineqs intersected with positive orthant
-    my $eqs = zero_vector<Rational> | $secT->EQUATIONS;
+    my $eqs = zero_vector<Rational> | $secT->give("LINEAR_SPAN|EQUATIONS");
     my $C = new Cone(INEQUALITIES=>$ineqs, EQUATIONS=>$eqs);
     my $inner = primitive($C->REL_INT_POINT);
     my $objective = 0|ones_vector<Rational>($n_vectors);

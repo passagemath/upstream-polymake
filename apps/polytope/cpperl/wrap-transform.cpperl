@@ -9,5 +9,6 @@
   {"args": ["QuadraticExtension<Rational>", "void", "QuadraticExtension<Rational>(perl::Canned<const Rational&>)", "void"], "func": "scale", "include": ["polymake/QuadraticExtension.h", "polymake/Rational.h"], "sig": "scale:T1.B.C0.x", "tp": 1},
   {"args": ["QuadraticExtension<Rational>", "void", "perl::Canned<const Vector<QuadraticExtension<Rational>>&>", "void"], "func": "translate", "include": ["polymake/QuadraticExtension.h", "polymake/Rational.h", "polymake/Vector.h"], "sig": "translate:T1.B.X.x", "tp": 1},
   {"args": ["QuadraticExtension<Rational>", "void", "QuadraticExtension<Rational>(Int)", "void"], "func": "scale", "include": ["polymake/QuadraticExtension.h", "polymake/Rational.h"], "sig": "scale:T1.B.C0.x", "tp": 1},
+  {"args": ["QuadraticExtension<Rational>", "void", "QuadraticExtension<Rational>(perl::Canned<const QuadraticExtension<Rational>&>)", "void"], "func": "scale", "include": ["polymake/QuadraticExtension.h", "polymake/Rational.h"], "sig": "scale:T1.B.C0.x", "tp": 1},
  null ],
 "version": 3}

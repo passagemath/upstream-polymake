@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -139,7 +139,7 @@ bs_data2Object(const bool realize,
    else
       desc << k << "th ";
    desc << "barycentric subdivision of " << description;
-   if (description.back() != '\n')
+   if (description.empty() || description.back() != '\n')
       desc << endl;
    p_out.set_description() << desc.str();
    return p_out;

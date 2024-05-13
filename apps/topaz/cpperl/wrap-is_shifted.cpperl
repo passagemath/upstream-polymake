@@ -1,0 +1,5 @@
+{"app": "topaz", "embed": "is_shifted.cc",
+ "inst": [
+  {"args": ["graph::lattice::BasicDecoration", "graph::lattice::Nonsequential", "void"], "func": "is_shifted", "include": ["polymake/graph/Decoration.h"], "sig": "is_shifted:T2.B", "tp": 2},
+ null ],
+"version": 3}

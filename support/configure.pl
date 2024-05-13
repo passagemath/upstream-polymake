@@ -1,4 +1,4 @@
-#  Copyright (c) 1997-2023
+#  Copyright (c) 1997-2024
 #  Ewgenij Gawrilow, Michael Joswig, and the polymake team
 #  Technische Universität Berlin, Germany
 #  https://polymake.org
@@ -108,6 +108,7 @@ $Polymake::DeveloperMode = -d "$root/testscenarios";
 my $BuildDir = $options{build} ? "build.$options{build}" : "build";
 my $perlxpath = "perlx/$Config::Config{version}/$Config::Config{archname}";
 my $perlextraflags = "";
+my $autogold = 0;
 
 load_enabled_bundled_extensions();
 parse_command_line(\@ARGV, $repeating_config);
@@ -643,6 +644,7 @@ int main() {
          undef $build_error;
       } else {
          $LDFLAGS .= " -fuse-ld=gold";
+         $autogold = 1;
       }
    }
    $build_error //= build_test_program($cxx_tell_version);
@@ -1484,6 +1486,12 @@ perl-devel or libperl-dev.  Please look for such a package and install it.
          # But g++ (gcc in C++ mode) does not accept _Thread_local so we define that to thread_local instead.
          # clang and clang++ both accept _Thread_local.
          $perlextraflags .= " -D_Thread_local=thread_local";
+         goto RETRYLIBPERL;
+      }
+      if ($autogold && $LDFLAGS =~ /-fuse-ld=gold/ && $build_error =~ /ld\.gold.*unknown -z option/s) {
+         # some distributions have extra flags in the perl settings that the gold linker
+         # doesn't understand, so switch back to the default linker in that case
+         $LDFLAGS =~ s/-fuse-ld=gold//g;
          goto RETRYLIBPERL;
       }
       $error = <<"---";

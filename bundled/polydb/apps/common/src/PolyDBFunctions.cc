@@ -67,12 +67,12 @@ std::string prepare_error_message(bson_error_t& error, const std::string& name, 
     std::mt19937 generator(random_device());
     std::uniform_int_distribution<> distribution(0, (int)chars.size() - 1);
 
-    char random_string[length];
+    std::string random_string(length, '-');
     for (std::size_t i = 0; i < length; ++i) {
       random_string[i] = chars[distribution(generator)];
     }
 
-    return std::string(random_string, length);
+    return random_string;
 }
 
 }}}

@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -16,7 +16,9 @@
 */
 
 #include "polymake/client.h"
+#include "polymake/linalg.h"
 #include "polymake/Matrix.h"
+#include "polymake/SparseMatrix.h"
 #include "polymake/Rational.h"
 #include "polymake/graph/Lattice.h"
 #include "polymake/graph/Decoration.h"
@@ -27,85 +29,84 @@ namespace polymake { namespace polytope {
 
 namespace {
 
-template <typename Decoration>
-Matrix<Int> constraints(const graph::Lattice<Decoration>& HD, const Array<Set<Int>>& max_chains)
+template <typename Decoration, typename SeqType>
+SparseMatrix<Int> constraints(const graph::Lattice<Decoration, SeqType>& HD, const Array<Set<Int>>& max_chains, bool is_extended)
 {
-  const Int d = HD.graph().nodes()-2; // don't count the top and bottom elements
+  const Int d = HD.graph().nodes();
   const Int m = max_chains.size();
+  IncidenceMatrix<NonSymmetric> chains(m, d, entire(max_chains));
+  auto Ineq = -1 * same_element_sparse_matrix<Int>(chains);
 
-  Matrix<Int> Ineq(d+m,d+1);
   // nonnegativity constraints from nontrivial poset elements
-  for (Int i = 0; i<d; ++i) {
-    Ineq(i,i+1) = 1;
-  }
-  // nontrivial Ineq from maximal chains
-  // the  top and bottom nodes are 0 and d+1, respectively;
-  // hence node indices correspond to column indices
-  for (Int i=0; i<m; ++i) {
-    Ineq(d+i,0) = 1;
-    for (auto j=entire(max_chains[i]); !j.at_end(); ++j)
-      Ineq(d+i,*j) = -1;
-  }
+  auto mat = (zero_vector<Int>(d) | unit_matrix<Int>(d)) / (ones_vector<Int>() | Ineq);
 
-  return Ineq;
+  if (is_extended)
+    return remove_zero_rows(mat.minor(All, ~Set<Int>{HD.top_node()+1, HD.bottom_node()+1}));
+  else
+    return mat;
 }
 
-template <typename Decoration>
-Matrix<Int> points(const graph::Lattice<Decoration>& HD, const Array<Set<Int>>& max_anti_chains)
+template <typename Decoration, typename SeqType>
+SparseMatrix<Int> points(const graph::Lattice<Decoration, SeqType>& HD, const Array<Set<Int>>& max_anti_chains, bool is_extended)
 {
   Set<Set<Int>> all_anti_chains;
   for (auto mac=entire(max_anti_chains); !mac.at_end(); ++mac) {
     all_anti_chains += all_subsets(*mac);
   }
+  if (is_extended) {
+    // this makes sure we still get vertices when projecting the coordinates later
+    all_anti_chains -= scalar2set(HD.top_node());
+    all_anti_chains -= scalar2set(HD.bottom_node());
+  }
 
   const Int m = all_anti_chains.size();
-  const Int d = HD.graph().nodes()-2; // don't count the top and bottom elements
-  Matrix<Int> Pts(m,d+1);
-  Pts.col(0) = ones_vector<Int>(m); // homogenizing coord
-
-  Int i=0;
-  for (auto ac=entire(all_anti_chains); !ac.at_end(); ++ac, ++i) {
-    for (auto j=entire(*ac); !j.at_end(); ++j) {
-      Pts(i,*j) = 1;
-    }
-  }
-  return Pts;
+  const Int d = HD.graph().nodes();
+  IncidenceMatrix<NonSymmetric> im(m, d, entire(all_anti_chains));
+  auto mat = ones_vector<Int>(m) | same_element_sparse_matrix<Int>(im);
+  if (is_extended)
+    return mat.minor(All, ~Set<Int>{HD.top_node()+1, HD.bottom_node()+1});
+  else
+    return mat;
 }
 
 }
 
-template <typename Decoration>
-BigObject chain_polytope(BigObject L)
+template <typename Decoration, typename SeqType>
+BigObject chain_polytope(BigObject L, bool is_extended=1)
 {
-  const graph::Lattice<Decoration> HD(L);
+  const graph::Lattice<Decoration, SeqType> HD(L);
 
-  const Int d = HD.graph().nodes()-2; // don't count the top and bottom elements
+  const Int d = HD.graph().nodes();
   const Int top = HD.top_node();
   const Int bottom = HD.bottom_node();
   Set<Int> tb1, tb2;
-  tb1 += 0; tb1 += d+1; tb2 += top; tb2 += bottom;
+  tb1 += 0; tb1 += d-1; tb2 += top; tb2 += bottom;
   if (tb1 != tb2)
     throw std::runtime_error("non-standard indices for top and bottom");
 
+  const Int dim = d + 1 - 2*is_extended;
   const Array<Set<Int>> max_chains = L.give("MAXIMAL_CHAINS");
-  const Matrix<Int> facets = constraints(HD, max_chains);
+  const SparseMatrix<Int> facets = constraints(HD, max_chains, is_extended);
   const Array<Set<Int>> max_anti_chains = L.give("MAXIMAL_ANTI_CHAINS");
-  const Matrix<Int> vertices = points(HD, max_anti_chains);
-  const Matrix<Rational> affine_hull(0,d+1);
+  const Matrix<Int> vertices = points(HD, max_anti_chains, is_extended);
+  const Matrix<Rational> affine_hull(0,dim);
    
-  return BigObject("Polytope<Rational>",
-                   "FACETS", facets,
-                   "AFFINE_HULL", affine_hull,
-                   "VERTICES", vertices,
-                   "CONE_DIM", d+1);
+  BigObject poly("Polytope<Rational>",
+                 "FACETS", facets,
+                 "AFFINE_HULL", affine_hull,
+                 "VERTICES", vertices,
+                 "CONE_DIM", dim,
+                 "CONE_AMBIENT_DIM", dim);
+  return poly;
 }
 
 UserFunctionTemplate4perl("#@category Producing a polytope from graphs"
                           "# Chain polytope of a poset."
                           "# See Stanley, Discr Comput Geom 1 (1986)."
-                          "# @param Lattice L"
+                          "# @param PartiallyOrderedSet L"
+                          "# @param Bool is_extended interpret input as extended poset and ignore top and bottom node"
                           "# @return Polytope<Rational>",
-                          "chain_polytope<Decoration>(Lattice<Decoration>)");
+                          "chain_polytope<Decoration,SeqType>(Lattice<Decoration,SeqType>; $=1)");
 } }
 
 // Local Variables:

@@ -1,4 +1,4 @@
-/* Copyright (c) 1997-2023
+/* Copyright (c) 1997-2024
    Ewgenij Gawrilow, Michael Joswig, and the polymake team
    Technische Universität Berlin, Germany
    https://polymake.org
@@ -34,24 +34,24 @@ BigObject lattice_permuted_faces(BigObject lattice_obj, const Permutation& perm)
   return static_cast<BigObject>((Lattice<Decoration, SeqType>(lattice_obj)).permuted_faces(perm));
 }
 
-template <typename Decoration>
+template <typename Decoration, typename SeqType>
 Array<Set<Int>> lattice_maximal_chains(BigObject lattice_obj)
 {
-  const Lattice<Decoration> HD(lattice_obj);
-  return maximal_chains(HD, true, true);
+  const Lattice<Decoration, SeqType> HD(lattice_obj);
+  return maximal_chains(HD, false, false);
 }
 
-template <typename Decoration>
+template <typename Decoration, typename SeqType>
 Graph<Undirected> lattice_comparability_graph(BigObject lattice_obj)
 {
-  const Lattice<Decoration> HD(lattice_obj);
-  const Int d = HD.graph().nodes()-2; // don't count top and bottom
+  const Lattice<Decoration, SeqType> HD(lattice_obj);
+  const Int d = HD.graph().nodes();
   const Array<Set<Int>> max_chains = lattice_obj.give("MAXIMAL_CHAINS");
   Graph<Undirected> CG(d);
   for (auto c = entire(max_chains); !c.at_end(); ++c) {
     if (c->size()>1) {
       for (auto pair = entire(all_subsets_of_k(*c,2)); !pair.at_end(); ++pair) {
-        CG.edge(pair->front()-1, pair->back()-1);
+        CG.edge(pair->front(), pair->back());
       }
     }
   }
@@ -60,8 +60,8 @@ Graph<Undirected> lattice_comparability_graph(BigObject lattice_obj)
 
 FunctionTemplate4perl("lattice_dual_faces<Decoration, SeqType>(Lattice<Decoration, SeqType>)");
 FunctionTemplate4perl("lattice_permuted_faces<Decoration, SeqType, Permutation>(Lattice<Decoration,SeqType>, Permutation)");
-FunctionTemplate4perl("lattice_maximal_chains<Decoration>(Lattice<Decoration>)");
-FunctionTemplate4perl("lattice_comparability_graph<Decoration>(Lattice<Decoration>)");
+FunctionTemplate4perl("lattice_maximal_chains<Decoration, SeqType>(Lattice<Decoration, SeqType>)");
+FunctionTemplate4perl("lattice_comparability_graph<Decoration, SeqType>(Lattice<Decoration, SeqType>)");
 
 } }
 
