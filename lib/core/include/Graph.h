@@ -2528,7 +2528,7 @@ public:
 
       void clear()
       {
-         if (!std::is_pod<E>::value) {
+         if (!(std::is_standard_layout<E>::value && std::is_trivial<E>::value)) {
             operations::clear<E> clr;
             for (auto it = entire(get_index_container()); !it.at_end(); ++it)
                clr(*index2addr(*it));

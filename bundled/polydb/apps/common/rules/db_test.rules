@@ -92,7 +92,7 @@ custom $pretty_print_doc = false;
 CONFIGURE {
    if ($db_host ne "" && $db_port != 0) {
       defined(eval {
-          new PolyDB::Client({host => "${db_host}", port=>${db_port}, useSSL=>${useSSL}, db_name=> $Test::db_auth_db, user=>$Test::db_admin_user, password=>$Test::db_admin_pwd, serverSelectionTimeout => 10000})
+          new PolyDB::Client({host => "${db_host}", port=>${db_port}, useSSL=>${useSSL}, db_name=> $Test::db_auth_db, user=>$Test::db_admin_user, password=>$Test::db_admin_pwd, serverSelectionTimeout => 10000, tlsAllowInvalidHostnames=>true, tlsAllowInvalidCertificates=>true})
    })
       or die <<".";
 Test Mongo instance at ${db_host}:${db_port} not available:

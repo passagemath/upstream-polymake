@@ -1,3 +1,25 @@
+=== polymake 4.13 ===
+
+-- distribution --
+  * perl:
+    - support for perl 5.40
+    - error for perl >= 5.42
+  * fix building with std=c++20 enabled
+
+-- interfaces --
+  * lrslib: fix building with 0.7.3
+  * normaliz: update to 3.10.3
+  * polydb: several fixes and improvements
+
+-- fan --
+  * secondary_fan: fix some corner cases
+
+-- polytope --
+  * project_full: fix for polyhedral complexes
+
+-- tropical --
+  * polytope_subdivision_as_complex: fix indices
+
 === polymake 4.12 ===
 
 -- general --

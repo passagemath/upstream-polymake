@@ -381,8 +381,9 @@ class PolyDBCollection {
      * 
      * @param pipeline_string the pipeline
      * @return const PolyDBCursor 
+    * @param options options for the aggregation pipeline
      */
-    const PolyDBCursor aggregate(const std::string& pipeline_string) const {
+    const PolyDBCursor aggregate(const std::string& pipeline_string, OptionSet options) const {
 
       bson_error_t error;
       bson_t * pipeline = bson_new_from_json((unsigned char *)pipeline_string.c_str(),-1,&error); 
@@ -392,10 +393,68 @@ class PolyDBCollection {
       //char * str = bson_as_relaxed_extended_json (pipeline, nullptr);
       //std::cout << "pipeline: " << str << std::endl;
 
-      // option MONGOC_QUERY_NO_CURSOR_TIMEOUT does not work?
-      std::shared_ptr<mongoc_cursor_t> cursor(mongoc_collection_aggregate(data_,MONGOC_QUERY_NONE,pipeline,nullptr,nullptr), mongoc_cursor_destroy);
-      bson_destroy(pipeline);
+      std::string options_string = "{ ";
 
+      bool comma = false;
+      if ( options["limit"] ) {
+        if ( comma ) {
+          options_string += ", ";
+        }
+        Int limit = options["limit"];
+        options_string += "\"limit\" : ";
+        options_string += std::to_string(limit);
+        comma = true;
+      }
+      if ( options["skip"] ) {
+        if ( comma ) {
+          options_string += ", ";
+        }
+        Int skip = options["skip"];
+        options_string += "\"skip\" : ";
+        options_string += std::to_string(skip);
+        comma = true;
+      }
+      if ( options["noCursorTimeout"] ) {
+        if ( comma ) {
+          options_string += ", ";
+        }
+        bool noCursorTimeout = options["noCursorTimeout"];
+        options_string += "\"noCursorTimeout\" : ";
+        options_string += noCursorTimeout ? "true" : "false";
+        comma = true;
+      }
+      if ( options["batchSize"] ) {
+        if ( comma ) {
+          options_string += ", ";
+        }
+        Int batchSize = options["batchSize"];
+        options_string += "\"batchSize\" : ";
+        options_string += std::to_string(batchSize);
+        comma = true;
+      }
+      if ( options["allowDiskUse"] ) {
+        if ( comma ) {
+          options_string += ", ";
+        }
+        bool du = options["allowDiskUse"];
+        options_string += "\"allowDiskUse\" : ";
+        options_string += du ? "true" : "false";
+        comma = true;
+      }
+      options_string += " }";
+
+       // FIXME howto remove the cast?
+      bson_t * opts = bson_new_from_json ((unsigned char *)options_string.c_str(), -1, &error);
+      if ( !opts ) {
+        bson_destroy(pipeline);
+        throw std::runtime_error(prepare_error_message(error,"bson_creation"));
+      }
+
+      // option MONGOC_QUERY_NO_CURSOR_TIMEOUT does not work?
+      std::shared_ptr<mongoc_cursor_t> cursor(mongoc_collection_aggregate(data_,MONGOC_QUERY_NONE,pipeline,opts,nullptr), mongoc_cursor_destroy);
+      bson_destroy(pipeline);
+      bson_destroy(opts);
+      
       // FIXME handle error with mongoc_cursor_error_document
 
       return PolyDBCursor(cursor);

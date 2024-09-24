@@ -806,7 +806,7 @@ struct spec_object_traits< ComplementIncidenceMatrix<MatrixRef> >
 
 template <typename MatrixRef>
 struct check_container_feature< ComplementIncidenceMatrix<MatrixRef>, Symmetric >
-   : check_container_feature<MatrixRef, Symmetric> {};
+   : check_container_ref_feature<MatrixRef, Symmetric> {};
 
 template <typename MatrixRef>
 class matrix_random_access_methods< ComplementIncidenceMatrix<MatrixRef> > {

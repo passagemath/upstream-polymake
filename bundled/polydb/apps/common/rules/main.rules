@@ -101,7 +101,7 @@ declare property_type PolyDBCollection : c++ ( name => "polymake::common::polydb
 
     method distinct(String,String;{}) : c++;
 
-    method aggregate(String) : c++;
+    method aggregate(String, {limit=>0, skip=>0, batch_size=>0, noCursorTimeout=>undef, batchSize=>undef, allowDiskUse=>false } ) : c++;
 
     method insert_one(String) : c++;
 

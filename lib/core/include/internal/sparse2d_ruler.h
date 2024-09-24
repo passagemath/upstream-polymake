@@ -54,7 +54,7 @@ protected:
       allocator alloc;
       ruler* r = reinterpret_cast<ruler*>(alloc.allocate(total_size(n)));
       r->alloc_size = n;
-      if (!std::is_pod<prefix_data>::value && !std::is_same<prefix_data, nothing>::value)
+      if (!(std::is_standard_layout<prefix_data>::value && std::is_trivial<prefix_data>::value) && !std::is_same<prefix_data, nothing>::value)
          construct_at(&r->size_and_prefix.second);
       r->size_and_prefix.first = 0;
       return r;

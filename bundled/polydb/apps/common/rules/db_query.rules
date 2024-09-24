@@ -124,6 +124,8 @@ options %cursor_options = (
    batchSize => 100,
    # Int  skip that many first elements; default is 0
    skip => 0,
+   # Bool allowDiskUse allows mongo to store interediate search results on disk to cope with lager queries
+   allowDiskUse => false
 );
 
 # @category Database Query Operations
@@ -211,11 +213,34 @@ user_method count_distinct ($$) {
    $json->decode($cursor->next)->{count};
 }
 
+# @category Database Query Operations
+# Run a mongodb aggregation pipeline in a collection
+# @param HASH pipeline, written in Mongo query language
 user_method aggregate($, %cursor_options) {
    my ($self, $query, $options) = @_;
    my $json = JSON->new;
-   new Cursor($self->collection->aggregate($json->encode($query)), \&deserialize_safe);
+   new Cursor($self->collection->aggregate($json->encode($query), $options));
 }
+
+# @category Database Query Operations
+# Return a random element matching the query
+# @param [complete PolyDB::query(grouped)] HASH query search criteria for objects to be inspected, written in Mongo query language
+#  an empty hash map will collect property values from all objects in this collection
+user_method sample_one($, %cursor_options) {
+   my ($self, $query, $options) = @_;
+   my $json = JSON->new;
+
+   my $pipeline = [
+         keys %$query ? ({ '$match' => $query }) : (),
+         { '$sample' => { "size" => 1 } }
+   ];
+
+   my $cur = new Cursor($self->collection->aggregate($json->encode($pipeline)), \&deserialize_safe);
+   if ( $cur->has_next() ) {
+      return $cur->next();
+   }
+}
+
 
 # Local Variables:
 # mode: perl

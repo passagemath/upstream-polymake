@@ -46,16 +46,19 @@ are valid.
       }
    } else {
       if (defined($path = $options->{"mongoc-include"})){
+         die "at 2";
          $usedopts++;
          $path .= "/$lmc1" if -d "$path/$lmc1";
          $CXXFLAGS .= " -I$path";
       }
       if (defined($path = $options->{"bson-include"})){
+         die "at 3";
          $usedopts++;
          $path .= "/$lb1" if -d "$path/$lb1";
          $CXXFLAGS .= " -I$path";
       }
       if (defined($path = $options->{"mongoc-lib"})){
+         die "at 4";
          $usedopts++;
          $LDFLAGS .= " -L$path";
          if ($path ne "/usr") {
@@ -63,6 +66,7 @@ are valid.
          }
       }
       if (defined($path = $options->{"bson-lib"})){
+         die "at 5";
          $usedopts++;
          $LDFLAGS .= " -L$path";
          if ($path ne "/usr") {
@@ -98,8 +102,12 @@ main (int argc, char *argv[])
 
 ---
 
+   $add_mongoc_flag = "";
+   $add_bson_flag = "";
+   $mongoc_tries = 0;
+   $bson_tries = 0;
 RETRY:
-   my $error=Polymake::Configure::build_test_program($testcode, CXXFLAGS => $CXXFLAGS, LDFLAGS => $LDFLAGS, LIBS => $LIBS);
+   my $error=Polymake::Configure::build_test_program($testcode, CXXFLAGS => $CXXFLAGS.$add_mongoc_flag.$add_bson_flag, LDFLAGS => $LDFLAGS, LIBS => $LIBS);
    if ($? != 0) {
       if ($error =~ /libmongoc version check failed/) {
          my $verstr = join(".",@ver);
@@ -110,14 +118,27 @@ libmongoc version too old, please install a newer version (>= $verstr) and use
 ---
       }
       # retry with /usr/include/<subdir> only when no --with flags are used
-      if ($usedopts == 0 && $error =~ /#include.*mongoc\.h.*/ && $CXXFLAGS !~ /$lmc1/) {
-         $CXXFLAGS .= " -I/usr/include/$lmc1";
+      if ($usedopts == 0 && $mongoc_tries == 0 && $error =~ /#include.*mongoc\.h.*/ ) {
+         $mongoc_tries = 1;
+         $add_mongoc_flag .= " -I/usr/include/$lmc1";
          goto RETRY;
       }
-      if ($usedopts == 0 && $error =~ /#include.*bson\.h.*/ && $CXXFLAGS !~ /$lb1/) {
-         $CXXFLAGS .= " -I/usr/include/$lb1";
+      if ($usedopts == 0 && $mongoc_tries == 1 && $error =~ /#include.*mongoc\.h.*/ && ( defined($pkg_base=$Polymake::Configure::BrewBase) or defined($pkg_base=$Polymake::Configure::FinkBase) )) {
+         $mongoc_tries = 2;
+         $add_mongoc_flag .= " -I$pkg_base/include/$lmc1";
          goto RETRY;
       }
+      if ($usedopts == 0 && $bson_tries == 0 && $error =~ /#include.*bson\.h.*/ && $CXXFLAGS !~ /$lb1/) {
+         $bson_tries = 1;
+         $add_bson_flag .= " -I/usr/include/$lb1";
+         goto RETRY;
+      }
+      if ($usedopts == 0 && $bson_tries == 1 && $error =~ /#include.*bson\.h.*/ && $CXXFLAGS !~ /$lb1/ && ( defined($pkg_base=$Polymake::Configure::BrewBase) or defined($pkg_base=$Polymake::Configure::FinkBase) )) {
+         $bson_tries = 2;
+         $add_bson_flag .= " -I$pkg_base/include/$lb1";
+         goto RETRY;
+      }
+
       $options->{polydb} = "" if $usedopts > 0;
       die <<"---";
 Could not compile test program checking for libmongoc and libbson.
@@ -126,5 +147,6 @@ Please try using --with-mongoc to specify the installation prefix, or check
 The complete error log follows:\n\n$error\n
 ---
    }
+   $CXXFLAGS .= $add_mongoc_flag.$add_bson_flag;
    return "CXXFLAGS '$CXXFLAGS', LDFLAGS '$LDFLAGS'";
 }

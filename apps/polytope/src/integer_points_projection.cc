@@ -38,7 +38,7 @@ public:
    Vector<Scalar> projFace;
    Set<Int> vertices;
 
-   Face<Scalar>(Int coord, const Set<Int>& vert, const Face<Scalar>& lower, const Face<Scalar>& upper)
+   Face(Int coord, const Set<Int>& vert, const Face<Scalar>& lower, const Face<Scalar>& upper)
    {
       vertices = vert;
       projFace = lower.projFace;
@@ -47,7 +47,7 @@ public:
       canonicalize_oriented(find_in_range_if(entire(projFace), operations::non_zero()));
    }
 
-   Face<Scalar>(Set<Int>& vert, Vector<Scalar>& proj)
+   Face(Set<Int>& vert, Vector<Scalar>& proj)
    {
       vertices = vert;
       projFace = proj;

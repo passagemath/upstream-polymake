@@ -192,7 +192,7 @@ struct type2type {
 */
 template <typename T>
 struct function_argument {
-   typedef typename std::conditional<(std::is_pod<T>::value && sizeof(T)<=sizeof(double)), const T, const T&>::type type;
+   typedef typename std::conditional<(std::is_standard_layout<T>::value && std::is_trivial<T>::value && sizeof(T)<=sizeof(double)), const T, const T&>::type type;
    typedef type const_type;
 };
 
@@ -1467,11 +1467,19 @@ struct lvalue_arg<void, false> {
 /// These functions are defined in the standard libraries at non-portable locations under non-portable names.
 /// Until they are unified, it's easier to provide an own implementation.
 
+#if __cplusplus <= 201703L
+
 template <typename T, typename... Args>
 T* construct_at(T* place, Args&&... args)
 {
    return ::new((void*)place) T(std::forward<Args>(args)...);
 }
+
+#else
+
+using std::construct_at;
+
+#endif
 
 #if __cplusplus <= 201402L
 
@@ -1517,7 +1525,7 @@ void relocate(T* from, T* to, std::false_type)
 template <typename T> inline
 void relocate(T* from, T* to)
 {
-   relocate(from, to, std::is_pod<T>());
+   relocate(from, to, bool_constant<std::is_standard_layout<T>::value && std::is_trivial<T>::value>());
 }
 
 template <typename T>

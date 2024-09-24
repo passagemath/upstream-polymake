@@ -1,0 +1,34 @@
+{
+   "upload_type": "software",
+   "creators": [
+      {
+         "name": "Gawrilow, Ewgenij"
+      },
+      {
+         "name": "Joswig, Michael",
+         "orcid": "0000-0002-4974-9659",
+         "affiliation": "Technische Universität Berlin"
+      },
+      {
+         "name": "the polymake team"
+      }
+   ],
+  "related_identifiers": [
+     {
+        "identifier": "10.1007/978-3-0348-8438-9_2",
+        "relation": "isDescribedBy",
+        "resource_type": "publication-article",
+        "scheme": "doi"
+     },
+     {
+        "identifier": "10.1007/s12532-016-0104-z",
+        "relation": "isDescribedBy",
+        "resource_type": "publication-article",
+        "scheme": "doi"
+     }
+  ],
+  "license": "GPL-2.0-or-later",
+  "communities": [
+     {"identifier": "dmg-lab"}
+  ]
+}

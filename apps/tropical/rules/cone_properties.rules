@@ -218,10 +218,10 @@ object Polytope {
             my ($cone,$chart) = @_;
             my $n = $cone->PSEUDOVERTICES->rows();
             my $finite_indices = sequence(0,$n) - $cone->FAR_PSEUDOVERTICES;
-            my $finite_pseudovertices = new Matrix($cone->PSEUDOVERTICES->minor($finite_indices,All));
-            return new fan::PolyhedralComplex(VERTICES=>tdehomog($finite_pseudovertices,$chart),
-                                              MAXIMAL_POLYTOPES=>$cone->POLYTOPE_MAXIMAL_COVECTOR_CELLS,
-                                              LINEALITY_SPACE=>[]);
+            my $finite_pseudovertices = new Matrix<Scalar>($cone->PSEUDOVERTICES->minor($finite_indices,All));
+            return new fan::PolyhedralComplex<Scalar>(VERTICES=>tdehomog($finite_pseudovertices,$chart),
+                                                      MAXIMAL_POLYTOPES=>$cone->POLYTOPE_MAXIMAL_COVECTOR_CELLS->minor(All, $finite_indices),
+                                                      LINEALITY_SPACE=>zero_matrix<Scalar>(0,$finite_pseudovertices->cols-1));
 	}
 
 

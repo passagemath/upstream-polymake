@@ -193,7 +193,11 @@ sub print_webpage {
    foreach my $ref (@$res) {
       print_formatted($indent,"Online Resources:");
       if ( ref($ref) eq "HASH" ) {
-         print_formatted($indent+1,$ref->{description}.": ".$ref->{address});
+         if (exists($ref->{description_plain})) {
+            print_formatted($indent+1,$ref->{description_plain}.": ".$ref->{address});
+         } else {
+            print_formatted($indent+1,$ref->{description}.": ".$ref->{address});
+         }
       } else {
          print_formatted($indent+1,$ref);
       }

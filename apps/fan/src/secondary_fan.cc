@@ -206,6 +206,9 @@ facet_indices_among_ineqs(const SparseMatrix<Scalar>& inequalities,
       facets.insertMax(zeros);
       index_of_zeros[zeros] += i; // for facets, this won't be duplicated; and we don't care about duplication for inequalities
    }
+   // for the empty set as a facet
+   if (facets.empty() && !index_of_zeros.empty())
+      return index_of_zeros.begin()->second;
    Set<Int> facet_indices;
    for (auto fit = entire(facets); !fit.at_end(); ++fit)
       facet_indices += index_of_zeros[*fit];

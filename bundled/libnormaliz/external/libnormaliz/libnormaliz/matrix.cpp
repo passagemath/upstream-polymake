@@ -41,6 +41,10 @@
 #include "flint/fmpz_mat.h"
 #endif
 
+#ifdef _MSC_VER
+typedef long long ssize_t;
+#endif
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -241,6 +245,43 @@ void Matrix<Integer>::print(ostream& out, bool with_format) const {
     }
 }
 
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::sparse_print(const string& name, const string& suffix) const {
+    string file_name = name + "." + suffix;
+    const char* file = file_name.c_str();
+    ofstream out(file);
+    sparse_print(out);
+    out.close();
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::sparse_print(ostream& out, bool with_format) const {
+    size_t i, j;
+    long nr_long = nr;
+    if (with_format)
+        out << -nr_long << endl << nc << endl;
+    for (i = 0; i < nr; i++) {
+        size_t nr_nonzero = 0;
+        for (j = 0; j < nc; j++) {
+            if(elem[i][j] != 0)
+                nr_nonzero++;
+        }
+        out << nr_nonzero << " ";
+
+        for (j = 0; j < nc; j++) {
+            if(elem[i][j] != 0)
+                out << j+1 << " " << elem[i][j] << " ";
+        }
+        out << endl;
+    }
+}
+
+//---------------------------------------------------------------------------
+
 template <typename Integer>
 void Matrix<Integer>::debug_print(char mark) const {
     for(int i = 0; i < 19; ++i)
@@ -270,10 +311,10 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr, bool count_fr
             size_t j = i;
             if (count_from_one)
                 j++;
-            out << std::setw(max_index_length + 1) << std::setprecision(6) << j << ": ";
+            out << std::setw((int)max_index_length + 1) << std::setprecision(6) << j << ": ";
         }
         for (j = 0; j < nc; j++) {
-            out << std::setw(max_length[j] + 1) << std::setprecision(6) << elem[i][j];
+            out << std::setw((int)max_length[j] + 1) << std::setprecision(6) << elem[i][j];
         }
         out << endl;
     }
@@ -388,7 +429,7 @@ bool Matrix<Integer>::check_projection(vector<key_t>& projection_key) {
         if (i == nr) {  // column is zero
             return false;
         }
-        tentative_key.push_back(i);
+        tentative_key.push_back(static_cast<key_t>(i));
         i++;
         for (; i < nr; i++) {
             if (elem[i][j] != 0) {
@@ -517,7 +558,7 @@ template <typename Integer>
 Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const {
     assert(rows.size() == nr);
     size_t size = 0;
-    for (const auto& row : rows) {
+    for (bool row : rows) {
         if (row) {
             size++;
         }
@@ -725,6 +766,19 @@ void Matrix<Integer>::append(const Matrix<Integer>& M) {
     nr += M.nr;
 }
 
+//---------------------------------------------------------------------------
+/*
+template <typename Integer>
+void Matrix<Integer>::swap_append(Matrix<Integer>& M) {
+    assert(nc == M.nc);
+    size_t old_nr = nr;
+    nr += M.nr;
+    elem.resize(nr);
+    for (size_t i=0; i<M.nr; i++) {
+        M.elem[i].swap(elem[old_nr+i]);
+    }
+}
+*/
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -1529,6 +1583,31 @@ void Matrix<Integer>::exchange_rows(const size_t& row1, const size_t& row2) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Matrix<Integer>::permute_columns(const vector<key_t>& perm) {
+    assert(perm.size() == nc);
+    Matrix<Integer> Copy = *this;
+    for(size_t i = 0; i< nr; ++i){
+        for(size_t j = 0; j< nc; ++j)
+            elem[i][j] = Copy[i][perm[j]];
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::inverse_permute_columns(const vector<key_t>& perm) {
+    assert(perm.size() == nc);
+    Matrix<Integer> Copy = *this;
+    for(size_t i = 0; i< nr; ++i){
+        for(size_t j = 0; j< nc; ++j)
+            elem[i][perm[j]] = Copy[i][j];
+    }
+}
+
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2) {
     if (col1 == col2)
         return;
@@ -1536,6 +1615,34 @@ void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2) {
     assert(col2 < nc);
     for (size_t i = 0; i < nr; i++) {
         std::swap(elem[i][col1], elem[i][col2]);
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::cyclic_shift_right(const size_t& col){
+    assert(col < nc);
+    Integer dummy;
+    for(int i = 0; i < nr; ++i){
+        dummy = elem[i][col];
+        for(size_t j = col; j >= 1; --j)
+            elem[i][j] = elem[i][j-1];
+        elem[i][0] = dummy;
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::cyclic_shift_left(const size_t& col){
+    assert(col < nc);
+    Integer dummy;
+    for(size_t i = 0; i < nr; ++i){
+        dummy = elem[i][0];
+        for(size_t j = 0; j < col; ++j)
+            elem[i][j] = elem[i][j+1];
+        elem[i][col] = dummy;
     }
 }
 
@@ -1596,7 +1703,7 @@ bool Matrix<Integer>::reduce_row(size_t corner) {
 template <typename Integer>
 bool Matrix<Integer>::reduce_rows_upwards() {
     // assumes that "this" is in row echelon form
-    // and reduces eevery column in which the rank jumps
+    // and reduces every column in which the rank jumps
     // by its lowest element
 
     if (nr == 0)
@@ -1628,6 +1735,54 @@ bool Matrix<Integer>::reduce_rows_upwards() {
     return true;
 }
 
+#ifdef ENFNORMALIZ
+template <>
+bool Matrix<renf_elem_class>::reduce_rows_upwards_negative(){
+    assert(false);
+    return true;
+}
+#endif
+
+template <typename Integer>
+bool Matrix<Integer>::reduce_rows_upwards_negative() {
+    // assumes that "this" is in row echelon form
+    // and reduces every column in which the rank jumps
+    // by its lowest element such that the nonzero remainders
+    // arer chosen negative
+
+    if (nr == 0)
+        return true;
+
+    for (size_t row = 0; row < nr; ++row) {
+        size_t col;
+        for (col = 0; col < nc; ++col)
+            if (elem[row][col] != 0)
+                break;
+        if (col == nc)
+            continue;
+        if (elem[row][col] < 0)
+            v_scalar_multiplication<Integer>(elem[row], -1);
+
+        for (long i = row - 1; i >= 0; --i) {
+            Integer quot, rem;
+
+            minimal_remainder(elem[i][col], elem[row][col], quot, rem);
+            if(rem > 0){
+                rem -= elem[row][col];
+                quot += 1;
+            }
+            elem[i][col] = rem;
+            for (size_t j = col + 1; j < nc; ++j) {
+                elem[i][j] -= quot * elem[row][j];
+                if (!check_range(elem[i][j])) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
 template <>
 bool Matrix<nmz_float>::reduce_rows_upwards() {
     assert(false);  // for the time being
@@ -1638,7 +1793,7 @@ bool Matrix<nmz_float>::reduce_rows_upwards() {
 template <>
 bool Matrix<renf_elem_class>::reduce_rows_upwards() {
     // assumes that "this" is in row echelon form
-    // and reduces eevery column in which the rank jumps
+    // and reduces every column in which the rank jumps
     // by its lowest element
     //
     if (nr == 0)
@@ -2294,7 +2449,7 @@ template <typename Integer>
 size_t Matrix<Integer>::rank() const {
     vector<key_t> key(nr);
     for (size_t i = 0; i < nr; ++i)
-        key[i] = i;
+        key[i] = static_cast<key_t>(i);
     return rank_submatrix(key);
 }
 
@@ -2398,7 +2553,7 @@ template <typename Integer>
 Integer Matrix<Integer>::vol() const {
     vector<key_t> key(nr);
     for (size_t i = 0; i < nr; ++i)
-        key[i] = i;
+        key[i] = static_cast<key_t>(i);
     return vol_submatrix(key);
 }
 
@@ -2451,11 +2606,11 @@ vector<key_t> Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success, vecto
         if (j == nc)  // Test_vec=0
             continue;
 
-        col.push_back(j);
+        col.push_back(static_cast<key_t>(j));
         if (perm_set)
             key.push_back(perm[i]);
         else
-            key.push_back(i);
+            key.push_back(static_cast<key_t>(i));
 
         if (rk > 0) {
             col_done[rk] = col_done[rk - 1];
@@ -2520,13 +2675,13 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
     }
 
     if (!using_renf<Integer>()) {
-        for (int i = nr - 1; i >= 0; --i) {
+        for (ssize_t i = nr - 1; i >= 0; --i) {
             for (size_t j = nr; j < nc; ++j) {
                 elem[i][j] *= denom;
                 if (!check_range(elem[i][j]))
                     return false;
             }
-            for (int k = i + 1; k < (int)nr; ++k) {
+            for (size_t k = i + 1; k < nr; ++k) {
                 for (size_t j = nr; j < nc; ++j) {
                     elem[i][j] -= elem[i][k] * elem[k][j];
                     if (!check_range(elem[i][j]))
@@ -2542,7 +2697,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
         // make pivot elemnst 1 and multiply RHS by denom as in the case with
         // integer types for uniform behavior
         Integer fact, help;
-        for (int i = nr - 1; i >= 0; --i) {
+        for (ssize_t i = nr - 1; i >= 0; --i) {
             fact = 1 / elem[i][i];
             Integer fact_times_denom = fact * denom;
             for (size_t j = i; j < nr; ++j)
@@ -2552,8 +2707,8 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
                 if (elem[i][j] != 0)
                     elem[i][j] *= fact_times_denom;
         }
-        for (int i = nr - 1; i >= 0; --i) {
-            for (int k = i - 1; k >= 0; --k) {
+        for (ssize_t i = nr - 1; i >= 0; --i) {
+            for (ssize_t k = i - 1; k >= 0; --k) {
                 if (elem[k][i] != 0) {
                     fact = elem[k][i];
                     for (size_t j = i; j < nc; ++j) {
@@ -2936,7 +3091,9 @@ vector<Integer> Matrix<Integer>::solve_rectangular(const vector<Integer>& v, Int
     size_t i;
     vector<key_t> rows = max_rank_submatrix_lex();
     Matrix<Integer> Left_Side = submatrix(rows);
-    assert(nc == Left_Side.nr);  // otherwise input hadn't full rank //TODO
+    if(nc != Left_Side.nr){
+        throw ArithmeticException("Most likely an overflow occurred. Rerunning with indefinite precision if possible. If you have used LOngLong, omit it. If the problem persists, iform the authors.");
+    }
     Matrix<Integer> Right_Side(v.size(), 1);
     Right_Side.write_column(0, v);
     Right_Side = Right_Side.submatrix(rows);
@@ -3568,7 +3725,7 @@ void Matrix<Integer>::saturate() {
 
 //---------------------------------------------------------------------------
 
-/* sorts rows of a matrix by a degree function and returns the permuation
+/* sorts rows of a matrix by a degree function and returns the permutation
  * does not change matrix (yet)
  */
 
@@ -3960,14 +4117,14 @@ size_t Matrix<nmz_float>::extreme_points_first(bool verbose, vector<key_t>& perm
     perm = vector<key_t> (nr);
     for (size_t i = 0; i < nr; ++i) {
         if (marked[i]) {
-            perm[j] = i;
+            perm[j] = static_cast<key_t>(i);
             j++;
         }
     }
     nr_extr = j;
     for (size_t i = 0; i < nr; ++i) {
         if (!marked[i]) {
-            perm[j] = i;
+            perm[j] = static_cast<key_t>(i);
             j++;
         }
     }
@@ -4057,7 +4214,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const {
     Integer V;
     vector<key_t> dummy(nr);
     for (size_t i = 0; i < nr; ++i)
-        dummy[i] = i;
+        dummy[i] = static_cast<key_t>(i);
     Gred.simplex_data(dummy, Supp, V, true);
     Integer MinusOne = -1;
     vector<Integer> MinusN(N);
@@ -4410,7 +4567,7 @@ BinaryMatrix<Integer>::BinaryMatrix(size_t m, size_t n, size_t height) {
 
 // data access & equality
 
-// test bit k in binary expansion at "planar" coordiantes (i,j)
+// test bit k in binary expansion at "planar" coordinates (i,j)
 template <typename Integer>
 bool BinaryMatrix<Integer>::test(key_t i, key_t j, key_t k) const {
     assert(i < nr_rows);
@@ -4480,7 +4637,7 @@ long BinaryMatrix<Integer>::val_entry(size_t i, size_t j) const {
 
     for (size_t k = 0; k < get_nr_layers(); ++k) {
         long n = 0;
-        if (test(i, j, k))
+        if (test(static_cast<key_t>(i), static_cast<key_t>(j), static_cast<key_t>(k)))
             n = 1;
         v += p2 * n;
         p2 *= 2;
@@ -4562,7 +4719,7 @@ void maximal_subsets(const vector<IncidenceVector>& ind, IncidenceVector& is_max
         size_t k = 0;  // counts the number of elements in set with index i
         for (size_t j = 0; j < card; j++) {
             if (ind[i][j]) {
-                elem[k] = j;
+                elem[k] = static_cast<key_t>(j);
                 k++;
             }
         }

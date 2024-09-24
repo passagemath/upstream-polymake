@@ -554,7 +554,11 @@ ConvexHullSolver::find_irredundant_representation(const Matrix<Rational>& Points
 
    Bitset V(Points.rows());
    for (Int index = D.Q->lastdv+1, end = D.P->m_A+D.P->d; index <= end; ++index)
+#ifdef PM_LRS_NEWCHECKINDEX
+      if ( !checkindex(D.P,D.Q,index,1) )
+#else
       if ( !checkindex(D.P,D.Q,index) )
+#endif
          V += D.Q->inequality[index - D.Q->lastdv]-1;
 
    return std::pair< Bitset, Matrix<Rational> >(V,AH);

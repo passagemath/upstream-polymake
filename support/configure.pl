@@ -27,13 +27,13 @@ you can specify its location on the command line:
 ./configure PERL=/path/to/my/new/perl [other options ...]
 .
       exit(1);
-   } elsif ($] >= 5.040) {
+   } elsif ($] >= 5.042) {
       print STDERR <<".";
 *************
 *** ERROR ***
 *************
 
-polymake has not been checkced for compatibility with perl 5.40 or newer;
+polymake has not been checked for compatibility with perl 5.42 or newer;
 your perl interpreter says it is $].
 
 If you already have another (older) perl interpreter somewhere else, you can
@@ -242,7 +242,7 @@ Allowed options (and their default values) are:
    $^O eq "darwin" and
    print STDERR <<'---';
   --with-fink=PATH         fink installation directory. You can pass "default" as argument if fink is installed into its default location ( /sw )
-  --with-brew=PATH         homebrew installation directory. You can pass "default" as argument if brew is installed into its default location ( /usr/local )
+  --with-brew=PATH         homebrew installation directory. You can pass "default" as argument if brew is installed into its default location ( /usr/local for intel Macs or /opt/homebrew for silicon Macs)
 .
 ---
    print STDERR <<"---";
@@ -870,8 +870,10 @@ If you have renamed the main fink program, please specify the top directory: --w
 #####################################################
 sub check_brew {
    $BrewBase=$options{brew};
-   if ( $BrewBase eq "default" || $BrewBase eq "/usr/local" ) {
-      $BrewBase = '/usr/local';
+   my $local_arch = `uname -m`;
+   chomp $local_arch;
+   if ( $BrewBase eq "default" || ( $local_arch == "x86_64" && $BrewBase eq "/usr/local" ) || ( $local_arch == "arm64" && $BrewBase eq '/opt/homebrew' ) ) {
+      $BrewBase = $Arch == "x86_64" ? '/usr/local' : '/opt/homebrew';
       unless (-f "$BrewBase/bin/brew") {
          die "brew installation corrupt: $BrewBase/bin/brew not found\n";
       }
@@ -994,6 +996,10 @@ sub collect_compiler_specific_options {
       }
       if (v_cmp($GCCversion, "11.0.0") >= 0) {
          $CXXFLAGS .= " -Wno-maybe-uninitialized -Wno-free-nonheap-object";
+      }
+      if (v_cmp($GCCversion, "14.0.0") >= 0) {
+         # due to false positives
+         $CXXFLAGS .= " -Wno-dangling-reference";
       }
 
    } elsif (defined($ICCversion)) {

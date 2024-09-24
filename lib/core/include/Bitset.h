@@ -662,6 +662,11 @@ public:
 
    void pop_back() { *this -= back(); }
 
+   bool operator== (const Bitset& s2) const
+   {
+      return !mpz_cmp(rep, s2.rep);
+   }
+
    bool operator== (const GenericSet<Bitset>& s2) const
    {
       return !mpz_cmp(rep, s2.top().rep);

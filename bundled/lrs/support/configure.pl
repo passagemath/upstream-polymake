@@ -147,7 +147,7 @@ RETRY:
                    "The complete error log follows:\n\n$message\n",
                    "Please investigate the reasons and fix the installation.\n";
          } else {
-            my ($lrsver) = $message =~ /version v\.([0-9.]+)[a-z]? [0-9.]+/;
+            my ($lrsver) = $message =~ /version v\.([0-9.]+)[a-z]?[ _][0-9.]+/;
             if (Polymake::Configure::v_cmp($lrsver,"5.1") >= 0) {
                $suppress_output = 1
                   if ($message =~ /\*Unbounded solution/);
@@ -155,6 +155,9 @@ RETRY:
                   if ($message =~ / gmp v\.\d+\.\d+/);
                $UseBundled = 0;
                $lrs_version = $lrsver;
+               if (Polymake::Configure::v_cmp($lrsver,"7.3") >= 0) {
+                  $CFLAGS .= " -DPM_LRS_NEWCHECKINDEX";
+               }
             } else {
                check_bundled() and !defined($lrs_path) or
                   die "Your lrslib version $lrsver is too old, at least version 5.1 is required.\n";

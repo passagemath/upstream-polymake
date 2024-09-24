@@ -42,6 +42,7 @@
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"
+#include "flint/fmpz.h"
 #include "flint/fmpz_poly.h"
 #endif
 
@@ -72,7 +73,10 @@ void flint_poly(fmpz_poly_t flp, const vector<mpz_class>& nmzp) {
     slong n = (slong)nmzp.size();
     fmpz_poly_fit_length(flp, n);
     for (size_t i = 0; i < nmzp.size(); ++i) {
-        fmpz_poly_set_coeff_mpz(flp, (slong)i, nmzp[i].get_mpz_t());
+        fmpz_t fc;
+        fmpz_init(fc);
+        fmpz_set_mpz(fc, nmzp[i].get_mpz_t());
+        fmpz_poly_set_coeff_fmpz(flp, (slong)i, fc);
     }
 }
 
@@ -80,9 +84,12 @@ void nmz_poly(vector<mpz_class>& nmzp, const fmpz_poly_t flp) {
     size_t n = (size_t)fmpz_poly_length(flp);
     nmzp.resize(n);
     mpz_t c;
+    fmpz_t fc;
     mpz_init(c);
+    fmpz_init(fc);
     for (size_t i = 0; i < nmzp.size(); ++i) {
-        fmpz_poly_get_coeff_mpz(c, flp, i);
+        fmpz_poly_get_coeff_fmpz(fc, flp, i);
+        fmpz_get_mpz(c, fc);
         nmzp[i] = mpz_class(c);
     }
     mpz_clear(c);
@@ -145,7 +152,7 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
     r = a;
     remove_zeros(r);
     size_t b_size = b.size();
-    int degdiff = r.size() - b_size;  // degree differenz
+    size_t degdiff = r.size() - b_size;  // degree differenz
     if (r.size() < b_size) {
         q = vector<Integer>();
     }
@@ -303,6 +310,10 @@ HilbertSeries::HilbertSeries() {
     initialize();
 }
 
+void HilbertSeries::set_to_one(){
+        num = vector<mpz_class>(1, 1);
+}
+
 // Constructor, creates num/denom, see class description for format
 HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_t>& gen_degrees) {
     num = vector<mpz_class>(1, 0);
@@ -312,6 +323,20 @@ HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_
 
 // Constructor, creates num/denom, see class description for format
 HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const map<long, denom_t>& denominator) {
+    num = numerator;
+    denom = denominator;
+    initialize();
+}
+
+HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const vector<denom_t> given_denom) {
+
+    map<long, denom_t> denominator;
+    for(size_t i = 0; i < given_denom.size(); ++i){
+        if(denominator.find(given_denom[i]) == denominator.end())
+            denominator[given_denom[i]] = 1;
+        else
+            denominator[given_denom[i]]++;
+    }
     num = numerator;
     denom = denominator;
     initialize();
@@ -455,7 +480,7 @@ void HilbertSeries::simplify() const {
         poly = coeff_vector<mpz_class>(i);
         while (denom_i > 0) {
             poly_div(q, r, num, poly);
-            if (r.size() == 0) {  // numerator is divisable by poly
+            if (r.size() == 0) {  // numerator is divisible by poly
                 num = q;
                 denom_i--;
             }
@@ -489,7 +514,7 @@ void HilbertSeries::simplify() const {
         poly = cyclotomicPoly<mpz_class>(i);
         while (cyclo_i > 0) {
             poly_div(q, r, num, poly);
-            if (r.empty()) {  // numerator is divisable by poly
+            if (r.empty()) {  // numerator is divisible by poly
                 num = q;
                 cyclo_i--;
             }
@@ -620,7 +645,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     vector<long> denom_vec = to_vector(denom);
     if (nr_coeff_quasipol > (long)denom_vec.size()) {
         if (verbose)
-            verboseOutput() << "Number of coeff of quasipol too large. Reset to deault value." << endl;
+            verboseOutput() << "Number of coeff of quasipol too large. Reset to default value." << endl;
         nr_coeff_quasipol = -1;
     }
 
@@ -690,11 +715,11 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     for (j = 0; j < reduced_period; ++j) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-        quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
+        quasi_poly[j] = compute_polynomial(quasi_poly[j], static_cast<int>(dim));
     }
 
     // substitute t by t/period:
-    // dividing by period^dim and multipling the coeff with powers of period
+    // dividing by period^dim and multiplying the coeff with powers of period
     mpz_class pp = 1;
     for (i = dim - 2; i >= 0; --i) {
         pp *= period;  // p^i   ok, it is p^(dim-1-i)
@@ -715,7 +740,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     g = libnormaliz::gcd(g, quasi_denom);
     quasi_denom /= g;
     QP.scalar_division(g);
-    // we use a normed shift, so that the cylcic shift % period always yields a non-negative integer
+    // we use a normed shift, so that the cyclic shift % period always yields a non-negative integer
     long normed_shift = -shift;
     while (normed_shift < 0)
         normed_shift += reduced_period;
@@ -848,6 +873,21 @@ void HilbertSeries::adjustShift() {
         }
     }
 }
+
+ void HilbertSeries::increase_shift(const int d){
+     assert( d >= 0);
+     num.insert(num.begin(),d,0);
+     if(cyclo_num.size() > 0)
+        cyclo_num.insert(cyclo_num.begin(),0);
+ }
+
+ void HilbertSeries::multiply_denom(const int d){
+        assert(d > 0);
+        if(denom.find(d) != denom.end())
+            denom[d]+=1;
+        else
+            denom[d] = 1;
+ }
 
 /*
 // methods for textual transfer of a Hilbert Series
@@ -1111,7 +1151,7 @@ vector<Integer> compute_e_vector(vector<Integer> Q, int dim) {
     vector<Integer> E_Vector(dim, 0);
     // cout << "QQQ " << Q;
     // Q.resize(dim+1);
-    int bound = Q.size();
+    int bound = static_cast<int>(Q.size());
     if (bound > dim)
         bound = dim;
     for (i = 0; i < bound; i++) {

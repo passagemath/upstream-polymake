@@ -129,11 +129,11 @@ public:
 
   template <typename T> friend
   std::enable_if_t<fits_as_coefficient<T>::value, bool>
-  operator==(const T&c, const UniPolynomial& p) { return p == c; }
+  operator==(const T&c, const UniPolynomial& p) { return p.operator==(c); }
 
   template <typename T> friend
   std::enable_if_t<fits_as_coefficient<T>::value, bool>
-  operator!=(const T&c, const UniPolynomial& p) { return p != c; }
+  operator!=(const T&c, const UniPolynomial& p) { return p.operator!=(c); }
 
   Coefficient get_coefficient(const monomial_type& m) const { return impl_ptr->get_coefficient(m); }
 
@@ -788,11 +788,11 @@ public:
 
   template <typename T> friend
   std::enable_if_t<fits_as_coefficient<T>::value, bool>
-  operator==(const T&c, const Polynomial& p) { return p == c; }
+  operator==(const T&c, const Polynomial& p) { return p.operator==(c); }
 
   template <typename T> friend
   std::enable_if_t<fits_as_coefficient<T>::value, bool>
-  operator!=(const T&c, const Polynomial& p) { return p != c; }
+  operator!=(const T&c, const Polynomial& p) { return p.operator!=(c); }
 
   Coefficient get_coefficient(const monomial_type& m) const { return impl_ptr->get_coefficient(m); }
   bool exists(const monomial_type& m) const { return impl_ptr->exists(m); }

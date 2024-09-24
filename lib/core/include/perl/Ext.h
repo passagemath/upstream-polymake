@@ -48,6 +48,15 @@
 #endif
 #endif
 
+// proto.h:452:41: error: ‘volatile’-qualified parameter is deprecated [-Werror=volatile]
+#if PerlVersion < 5395 && defined(__cplusplus) && __cplusplus > 201703L
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wvolatile"
+#endif
+#endif
+
 #if PerlVersion >= 5380
 # define PERL_USE_VOLATILE_API
 #endif

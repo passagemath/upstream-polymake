@@ -83,12 +83,12 @@ class InnerSolver {
    SCIP_RETCODE insert_inequality(const GenericVector<TVector, Rational>& coeffs, bool isEquation)
    {
       SCIP_CONS* cons;
-      SCIP_Real vals[dim];
+      std::vector<SCIP_Real> vals(dim);
       auto coeff_it = coeffs.top().begin();
-      for (SCIP_Real *v = vals, *v_end = v + dim; v < v_end; ++v, ++coeff_it)
-         *v = static_cast<double>(*coeff_it);
+      for (int i = 0; i < dim; ++i, ++coeff_it)
+         vals[i] = static_cast<double>(*coeff_it);
 
-      SCIP_CALL( SCIPcreateConsBasicLinear(scip, &cons, "is this important?", dim, variables, vals, 0, isEquation ? 0 : SCIPinfinity(scip)) );
+      SCIP_CALL( SCIPcreateConsBasicLinear(scip, &cons, "is this important?", dim, variables, vals.data(), 0, isEquation ? 0 : SCIPinfinity(scip)) );
       SCIP_CALL( SCIPaddCons(scip, cons) );
       constraints.push_back(cons);
       return SCIP_OKAY;
@@ -112,6 +112,11 @@ class InnerSolver {
 
       // disable scip output to stdout
       SCIPmessagehdlrSetQuiet(SCIPgetMessagehdlr(scip), TRUE);
+#if POLYMAKE_DEBUG
+      if (!debug_print)
+#endif
+         SCIPmessageSetErrorPrinting(nullptr,nullptr);
+
       SCIP_CALL( SCIPcreateProbBasic(scip, "milp") );
       return SCIP_OKAY;
    }
@@ -205,6 +210,7 @@ class InnerSolver {
          SCIP_CALL( SCIPreleaseCons(scip, &c) );
       }
       constraints.clear();
+      SCIPmessageSetErrorPrintingDefault();
       SCIP_CALL( SCIPfree(&scip) );
       return SCIP_OKAY;
    }
@@ -321,7 +327,13 @@ void scip_milp_client(BigObject p, BigObject milp, bool maximize, OptionSet opti
    generic_milp_client<Rational, scip_interface::Solver>(p, milp, maximize, S);
 }
 
+Int scip_get_version() {
+   return SCIPmajorVersion() * 100 + SCIPminorVersion();
+}
+
 Function4perl(&scip_milp_client, "scip_milp_client(Polytope<Rational>, MixedIntegerLinearProgram<Rational>, $; {initial_basis => undef})");
+
+Function4perl(&scip_get_version, "scip_get_version()");
 
 InsertEmbeddedRule("function scip.milp: create_MILP_solver<Scalar> [Scalar==Rational] () : c++ (name => 'scip_interface::create_MILP_solver') : returns(cached);\n");
 

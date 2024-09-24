@@ -37,7 +37,7 @@ Set<Int> coordinates_to_eliminate(const Array<Int>& indices, Int ambient_dim, In
 {
    Set<Int> coords_to_eliminate;
    const Int first_coord = p_in.isa("Polytope") ||
-      p_in.isa("PointConfiguration") ? 1 : 0;
+      p_in.isa("PointConfiguration") || p_in.isa("PolyhedralComplex") ? 1 : 0;
    const Int last_coord = ambient_dim-1;
    if (indices.empty()) {
       Matrix<Scalar> linear_span;

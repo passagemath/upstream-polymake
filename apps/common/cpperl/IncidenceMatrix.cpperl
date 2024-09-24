@@ -37,5 +37,12 @@
   {"args": ["IncidenceMatrix<NonSymmetric>", "perl::Canned<const pm::Transposed<pm::MatrixMinor<pm::IncidenceMatrix<pm::NonSymmetric> const&, pm::all_selector const&, pm::incidence_line<pm::AVL::tree<pm::sparse2d::traits<pm::sparse2d::traits_base<pm::nothing, true, false, (pm::sparse2d::restriction_kind)0>, false, (pm::sparse2d::restriction_kind)0> > const&> const&> >&>"], "include": ["polymake/IncidenceMatrix.h", "polymake/Matrix.h"], "op": "new", "sig": "new.X"},
   {"args": ["IncidenceMatrix<NonSymmetric>", "perl::Canned<const pm::Subsets_of_k<pm::Series<Int, true> const&>&>"], "include": ["polymake/IncidenceMatrix.h", "polymake/PowerSet.h", "polymake/Set.h"], "op": "new", "sig": "new.X"},
   {"args": ["IncidenceMatrix<NonSymmetric>", "perl::Canned<const pm::Subsets_of_k<pm::Series<Int, true> const>&>"], "include": ["polymake/IncidenceMatrix.h", "polymake/PowerSet.h", "polymake/Set.h"], "op": "new", "sig": "new.X"},
+  {"args": ["perl::AnchorArg<perl::Canned<const IncidenceMatrix<Symmetric>&>>"], "include": ["polymake/IncidenceMatrix.h"], "op": "com", "sig": "com:O.X11"},
+  {"args": ["IncidenceMatrix<Symmetric>", "perl::Canned<const IncidenceMatrix<Symmetric>&>"], "include": ["polymake/IncidenceMatrix.h"], "op": "new", "sig": "new.X"},
+  {"args": ["IncidenceMatrix<NonSymmetric>", "perl::Canned<const IncidenceMatrix<Symmetric>&>"], "include": ["polymake/IncidenceMatrix.h"], "op": "new", "sig": "new.X"},
+  {"args": ["perl::AnchorArg<perl::Canned<IncidenceMatrix<NonSymmetric>>>"], "include": ["polymake/IncidenceMatrix.h"], "op": "com", "sig": "com:O.X11"},
+  {"args": ["perl::Canned<const Wary<IncidenceMatrix<Symmetric>>&>", "perl::Canned<const IncidenceMatrix<NonSymmetric>&>"], "include": ["polymake/IncidenceMatrix.h"], "op": "_eq", "sig": "_eq:O.X4.X"},
+  {"args": ["IncidenceMatrix<Symmetric>", "perl::Canned<const pm::ComplementIncidenceMatrix<pm::IncidenceMatrix<pm::Symmetric> const&>&>"], "include": ["polymake/IncidenceMatrix.h"], "op": "new", "sig": "new.X"},
+  {"args": ["perl::Canned<const Wary<IncidenceMatrix<Symmetric>>&>", "perl::Canned<const pm::ComplementIncidenceMatrix<pm::IncidenceMatrix<pm::NonSymmetric> const>&>"], "include": ["polymake/IncidenceMatrix.h"], "op": "_eq", "sig": "_eq:O.X4.X"},
  null ],
 "version": 3}

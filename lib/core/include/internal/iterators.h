@@ -1801,7 +1801,7 @@ reversed_view(const Container& c)
    return reinterpret_cast<const typename ensure_features<Container, reversed>::container&>(c);
 }
 
-template <typename Value, bool is_simple=std::is_pod<Value>::value>
+template <typename Value, bool is_simple=(std::is_standard_layout<Value>::value && std::is_trivial<Value>::value)>
 class op_value_cache {
    Value* value;
    allocator val_alloc;

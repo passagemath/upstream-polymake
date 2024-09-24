@@ -171,14 +171,16 @@ int main (int argc, char *argv[])
          $message .= " [OpenMP support disabled]";
       }
 
-      foreach (qw(shadow conversion unused-variable)) {
+      foreach (qw(shadow conversion unused-variable sign-compare)) {
          $BundledNoWarnings .= " -Wno-$_";
       }
       if (defined($Polymake::Configure::GCCversion)) {
-         if (Polymake::Configure::v_cmp($Polymake::Configure::GCCversion, "8.0.0") > 0 && Polymake::Configure::v_cmp($Polymake::Configure::GCCversion, "9.0.0") < 0) {
+         if (Polymake::Configure::v_cmp($Polymake::Configure::GCCversion, "5.0.0") > 0 && Polymake::Configure::v_cmp($Polymake::Configure::GCCversion, "11.0.0") < 0) {
             $BundledNoWarnings .= " -Wno-maybe-uninitialized";
-         } elsif (Polymake::Configure::v_cmp($Polymake::Configure::GCCversion, "13.0.0") > 0) {
+         }
+         if (Polymake::Configure::v_cmp($Polymake::Configure::GCCversion, "13.0.0") > 0) {
             $BundledNoWarnings .= " -Wno-uninitialized";
+            $BundledNoWarnings .= " -Wno-stringop-overread";
          }
       }
       $BundledNoWarnings .= " -Wno-unused-but-set-variable"

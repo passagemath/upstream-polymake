@@ -130,6 +130,27 @@ user_method insert_one($, %insert_one_options) {
    $options->{noinsert} || $self->collection->insert_one($json->encode($polymake_object));
 }
 
+method plain_insert_one {
+   my ($self, $obj, $options) = @_;
+
+   # prepare metadata
+   prepare_metadata($self, $obj, $options);
+
+   # serialize the polymake object
+   my $polymake_object = $options->{schema} ? Core::Serializer::serialize($obj, { schema => $options->{schema} } ) : Core::Serializer::serialize($obj);
+
+   # set the id, if given
+   if ( defined($options->{id}) ) { $polymake_object->{_id} = $options->{id}; }
+
+   # adjust the polymake version, so that the object can be read by older polymake versions
+   $polymake_object->{_ns}->{polymake}->[1] = $options->{polymake_version} // $Polymake::Version;
+
+   # insert into polydb
+   my $json = JSON->new;
+   $options->{noinsert} || $self->collection->insert_one($json->encode($polymake_object));
+}
+
+
 # @category Database Collection Administration
 # Insert one object into the collection
 # @param Core::BigObject array of objects to be inserted 
@@ -218,6 +239,7 @@ user_method update_one(;$$) {
    };
 
    my $json = JSON->new;
+   $json->convert_blessed(1);
    $self->collection->update_one($json->encode($filter), $json->encode($update));
 }
 

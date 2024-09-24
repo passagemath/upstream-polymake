@@ -245,7 +245,12 @@ bool RayComputationLRS::determineRedundancies(Polyhedron & data, std::list<FaceW
     for (ulong index = lastdv + 1; index <= m + d; index++) {
         ineq = Q->inequality[index - lastdv]; /* the input inequality number corr. to this index */
 
+#ifdef PM_LRS_NEWCHECKINDEX
+        redineq[ineq] = checkindex (P, Q, index, 1);
+#else
         redineq[ineq] = checkindex (P, Q, index);
+#endif
+
     }  /* end for index ..... */
     
     std::list<ulong> redundancies;

@@ -114,7 +114,7 @@ int main() {
 }
 ---
 RETRY:
-   my $error=Polymake::Configure::build_test_program($testcode, LIBS => "$LIBS -lgmp", CXXFLAGS => "$CXXFLAGS", LDFLAGS => "$LDFLAGS");
+   my $error=Polymake::Configure::build_test_program($testcode, LIBS => "$LIBS -lmpfr -lgmp", CXXFLAGS => "$CXXFLAGS", LDFLAGS => "$LDFLAGS");
    if ($?==0) {
       my $output=Polymake::Configure::run_test_program();
       if ($?) {
@@ -125,7 +125,7 @@ RETRY:
          if ($LIBS !~ /-lsoplex-pic/) {
             # if using libsoplex try to build a shared library as well to check
             # for relocation problems, i.e. whether it was built with -fPIC
-            $error = Polymake::Configure::build_test_program($testcode, LIBS => "$LIBS -lgmp", CXXFLAGS => "$Polymake::Configure::CsharedFLAGS $CXXFLAGS", LDFLAGS => "$Polymake::Configure::LDsharedFLAGS $LDFLAGS");
+            $error = Polymake::Configure::build_test_program($testcode, LIBS => "$LIBS -lmpfr -lgmp", CXXFLAGS => "$Polymake::Configure::CsharedFLAGS $CXXFLAGS", LDFLAGS => "$Polymake::Configure::LDsharedFLAGS $LDFLAGS");
             goto FAILED if ($?);
          }
 
