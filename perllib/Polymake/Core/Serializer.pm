@@ -661,6 +661,8 @@ sub deserialize {
         or croak( "no polymake data items in deserialized data" );
       my $main_version = eval("v".$ns_data->[1]);
       my $version_bump = $VersionNumber gt $main_version;
+      warn_print("loading a file from a future polymake version ", $ns_data->[1], " is unsupported and might crash polymake")
+         if ($VersionNumber lt $main_version);
 
       if (defined(my $top_ext = $src->{_ext})) {
          $mandatory[$_] = true for @$top_ext;

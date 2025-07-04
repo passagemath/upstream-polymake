@@ -72,16 +72,17 @@ void hypersurface_dome(BigObject h)
 template <typename Addition>
 void dome_regions(BigObject h)
 {
-  const Set<Int> far_vertices = h.give("FAR_VERTICES");
   BigObject dome = h.give("DOME");
 
   // here we explicitly want to take redundant MONOMIALS into account ...
   const SparseMatrix<Int> monoms = h.give("MONOMIALS");
   const IncidenceMatrix<> vii = dome.give("VERTICES_IN_INEQUALITIES");
+  const Matrix<Rational> v = dome.give("VERTICES");
   const Set<Int> redundant_monomials = polytope::compress_incidence(vii).first;
 
   // but we also need the irredundant version
   const IncidenceMatrix<> vif = dome.give("VERTICES_IN_FACETS");
+  const Set<Int> far_vertices = dome.give("FAR_FACE");
   const Int f = common::find_row(vif, far_vertices);
   Graph<> dg = dome.give("DUAL_GRAPH.ADJACENCY");
   if (f >= 0)
@@ -110,7 +111,20 @@ void dome_regions(BigObject h)
       weights[i] = gcd(weights[i],lattice_diff[ld]);
   }
 
-  h.take("MAXIMAL_POLYTOPES") << cells;
+  struct id_collector {
+     mutable Set<Int> oldids;
+     void operator() (Int i, Int j) const
+     {
+        oldids += i;
+     }
+  };
+  IncidenceMatrix<> cellsinc(cells);
+  id_collector coll;
+  cellsinc.squeeze_cols(coll);
+  const Matrix<Rational> lin = dome.give("LINEALITY_SPACE");
+  h.take("MAXIMAL_POLYTOPES") << cellsinc;
+  h.take("PROJECTIVE_VERTICES") << v.minor(coll.oldids,All);
+  h.take("LINEALITY_SPACE") << (cellsinc.cols() > 0 ? lin : Matrix<Rational>(0, v.cols()));
   h.take("REDUNDANT_MONOMIALS") << redundant_monomials;
   // This takes care of constant polynomials - otherwise the regions would be empty
   IncidenceMatrix<> regions = vif.minor(~range(f,f),All);

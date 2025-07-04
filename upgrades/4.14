@@ -1,0 +1,72 @@
+#  Copyright (c) 1997-2024
+#  Ewgenij Gawrilow, Michael Joswig, and the polymake team
+#  Technische Universität Berlin, Germany
+#  https://polymake.org
+#
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by the
+#  Free Software Foundation; either version 2, or (at your option) any
+#  later version: http://www.gnu.org/licenses/gpl.txt.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#-------------------------------------------------------------------------------
+
+# == SUMMARY ==
+# - In tropical::Polytope:
+#   * PSEUDOVERTICES have changed their semantics. The old meaning was a copy of DOME.VERTICES
+#   * properties related to PSEUDOVERTICES in its old meaning are moved into DOME
+#   * FAR_PSEUDOVERTICES is a copy of DOME.FAR_VERTICES
+#   * PSEUDOVERTICES now only include the rows of DOME.VERTICES with first coordinate "1" (and omits that coordinate)
+
+upgrade 4.13.1 tropical::Polytope {
+  my ($obj) = @_;
+  my $changed = 0;
+
+  if (exists $obj->{"MAXIMAL_COVECTOR_CELLS"}) {
+    move_property($obj, "MAXIMAL_COVECTOR_CELLS", $obj->{"DOME"}, "MAXIMAL_COVECTOR_CELLS");
+    $changed = 1;
+  }
+
+  if (exists $obj->{"POLYTOPE_MAXIMAL_COVECTOR_CELLS"}) {
+    move_property($obj, "POLYTOPE_MAXIMAL_COVECTOR_CELLS", $obj->{"DOME"}, "TROPICAL_SPAN_MAXIMAL_COVECTOR_CELLS");
+    $changed = 1;
+  }
+
+  if (exists $obj->{"POLYTOPE_PSEUDOVERTICES"}) {
+    move_property($obj, "POLYTOPE_PSEUDOVERTICES", $obj->{"DOME"}, "TROPICAL_POLYTOPE_VERTICES");
+  }
+
+  if (exists $obj->{"PSEUDOVERTICES"}) {
+    my $PV = $obj->{"PSEUDOVERTICES"};
+    my $n = scalar @{$PV} - 1;
+    my $d = scalar @{$PV->[0]} - 1;
+
+    my @actual_PV_indices = grep { $PV->[$_]->[0] eq "1" } 0..$n;
+    
+    $obj->{"PSEUDOVERTICES"} = [map { [@{$PV->[$_]}[1..$d]] } @actual_PV_indices];
+
+    $changed = 1;
+    
+    if (exists $obj->{"PSEUDOVERTEX_COVECTORS"} ) {
+      move_property($obj, "PSEUDOVERTEX_COVECTORS", $obj->{"DOME"}, "VERTEX_COVECTORS");
+      $obj->{"PSEUDOVERTEX_COVECTORS"} = [@{$obj->{"DOME"}->{"VERTEX_COVECTORS"}}[@actual_PV_indices]];
+    }
+
+    if (exists $obj->{"PSEUDOVERTEX_COARSE_COVECTORS"} ) {
+      $obj->{"PSEUDOVERTEX_COARSE_COVECTORS"} = [@{$obj->{"PSEUDOVERTEX_COARSE_COVECTORS"}}[@actual_PV_indices]];
+    }
+  }
+
+  return $changed;
+}
+
+upgrade 4.13.1 tropical::Polytope.FAR_PSEUDOVERTICES = delete;
+
+# Local Variables:
+# mode: perl
+# cperl-indent-level: 3
+# indent-tabs-mode:nil
+# End:

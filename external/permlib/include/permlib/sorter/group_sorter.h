@@ -39,7 +39,7 @@ namespace permlib {
 
 /// A sorter that sorts a sequence of permutations with respect to a ordering induced by a base
 template <class PERM>
-class GroupSorter : public std::binary_function<PERM, PERM, bool>{
+class GroupSorter {
 public:
 	/// constructor
 	/**

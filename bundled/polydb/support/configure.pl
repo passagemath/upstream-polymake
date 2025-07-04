@@ -46,19 +46,16 @@ are valid.
       }
    } else {
       if (defined($path = $options->{"mongoc-include"})){
-         die "at 2";
          $usedopts++;
          $path .= "/$lmc1" if -d "$path/$lmc1";
          $CXXFLAGS .= " -I$path";
       }
       if (defined($path = $options->{"bson-include"})){
-         die "at 3";
          $usedopts++;
          $path .= "/$lb1" if -d "$path/$lb1";
          $CXXFLAGS .= " -I$path";
       }
       if (defined($path = $options->{"mongoc-lib"})){
-         die "at 4";
          $usedopts++;
          $LDFLAGS .= " -L$path";
          if ($path ne "/usr") {
@@ -66,7 +63,6 @@ are valid.
          }
       }
       if (defined($path = $options->{"bson-lib"})){
-         die "at 5";
          $usedopts++;
          $LDFLAGS .= " -L$path";
          if ($path ne "/usr") {

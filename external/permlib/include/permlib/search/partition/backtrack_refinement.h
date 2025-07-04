@@ -67,7 +67,7 @@ private:
 	
 	typedef typename Refinement<PERM>::RefinementPtr RefinementPtr;
 	
-	struct RefinementSorter : public std::binary_function<RefinementPtr, RefinementPtr, bool> {
+	struct RefinementSorter {
 		RefinementSorter(const BaseSorterByReference& sorter, const Partition* pi) : m_sorter(sorter), m_pi(pi) {}
 		
 		bool operator()(RefinementPtr a, RefinementPtr b) const {

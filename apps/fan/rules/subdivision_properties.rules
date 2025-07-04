@@ -182,7 +182,10 @@ weight 1.10;
 property REGULAR : Bool;
 
 # @category Geometry
-# A subdivision is unimodular if it is a triangulation such that each maximal simplex has unit normalized volume.
+# A subdivision is unimodular if it is a triangulation such that each maximal
+# simplex has unit normalized volume. If the subdivision is lower dimensional,
+# it is considered in its affine hull.
+#
 # @example Unit square, triangulated.
 # > $S = new SubdivisionOfPoints(POINTS=>cube(2,0)->VERTICES, WEIGHTS=>[0,0,0,1]);
 # > print $S->UNIMODULAR

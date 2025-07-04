@@ -5,7 +5,6 @@ from subprocess import check_output
 from os import unlink, path
 
 import base64
-import imghdr
 import re
 import signal
 import urllib

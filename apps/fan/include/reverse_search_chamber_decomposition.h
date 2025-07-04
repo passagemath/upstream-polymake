@@ -28,10 +28,11 @@ namespace fan {
 namespace reverse_search_chamber_decomposition {
 
 template<typename Scalar>
-Vector<Scalar> signature_to_vertex(const Matrix<Scalar>& hyp, const Bitset& signature){
+Vector<Scalar> signature_to_vertex(const Matrix<Scalar>& hyp, const Bitset& signature, const Vector<Scalar>& apv){
    Vector<Scalar> result = ones_vector<Scalar>(hyp.rows());
    result.slice(~signature) *= -1;
-   return T(hyp) * result;
+   result = T(hyp) * result;
+   return -apv*result | result;
 }
 
 template<typename Scalar, typename CacheType>
@@ -49,10 +50,11 @@ class Node {
          // we would have to modify signatures in this case.
          Bitset result(signature);
          Int i = 0;
-         Matrix<Scalar> tmp(0, facet.dim());
+         Matrix<Scalar> tmp(cache.get_support_eq());
          tmp /= facet;
+         Int tmprk = rank(tmp);
          for(const auto& f : rows(hyperplanes)){
-            if(rank(tmp/f) == 1){
+            if(rank(tmp/f) == tmprk){
                facet_is_hyperplane = true;
                result ^= i;
             }
@@ -63,14 +65,22 @@ class Node {
 
       void populate_neighbors(){
          const Matrix<Scalar> F = cache.get_facets(signature);
+         const Vector<Scalar>& apv(cache.all_positive_eq());
          for(const auto& f : rows(F)){
             if(!cache.facet_belongs_to_support(f)){
                bool facet_is_hyperplane = false;
                Bitset neighborS = neighbor_signature_from_facet(f, facet_is_hyperplane);
                if(facet_is_hyperplane){
-                  Vector<Scalar> neighborV = signature_to_vertex(hyperplanes, neighborS);
-                  if(lex_compare(neighborV, vertex) == 1){
+                  Vector<Scalar> neighborV = signature_to_vertex(hyperplanes, neighborS, apv);
+                  Scalar apvdiff = neighborV[0]-vertex[0];
+                  if(apvdiff<0){
                      upNeighbors[neighborV] = neighborS;
+                  } else if (apvdiff==0){
+                     if(lex_compare(neighborV, vertex) == 1){
+                        upNeighbors[neighborV] = neighborS;
+                     } else {
+                        downNeighbors[neighborV] = neighborS;
+                     }
                   } else {
                      downNeighbors[neighborV] = neighborS;
                   }
@@ -91,7 +101,7 @@ class Node {
 
       Node(const Matrix<Scalar>& hyp, const Bitset& sig, CacheType& c):
          hyperplanes(hyp), signature(sig), cache(c) {
-            vertex = signature_to_vertex(hyperplanes, signature);
+            vertex = signature_to_vertex(hyperplanes, signature, cache.all_positive_eq());
             populate_neighbors();
          }
 

@@ -78,7 +78,7 @@ find_initial_subdivision(const Matrix<Scalar>& V_full,
 {
    UniformlyRandom<Rational> random(seed);
    const Int n = V_full.rows();
-   const Int d = V_full.cols();
+   const Int d = V_full.cols()+1;
    
    Vector<Scalar> heights(n);
    if (!restrict_to.rows())
@@ -90,7 +90,8 @@ find_initial_subdivision(const Matrix<Scalar>& V_full,
       heights = coeffs * basis;
    }
 
-   BigObject Q("Polytope", mlist<Scalar>(), "POINTS", V_full | heights);
+   Vector<Scalar> extrapoint = accumulate(rows(V_full), operations::add());
+   BigObject Q("Polytope", mlist<Scalar>(), "POINTS", (ones_vector<Scalar>() | V_full | heights) / ( Scalar(n) | extrapoint | Scalar(-n) ));
 
    const IncidenceMatrix<> pif = Q.give("POINTS_IN_FACETS");
    const Matrix<Scalar> F = Q.give("FACETS");
@@ -277,8 +278,10 @@ BigObject
 secondary_fan_impl(const Matrix<Scalar>& V_embed,
                    OptionSet options)
 {
-   const Matrix<Scalar> V_full = polytope::full_dim_projection(V_embed);
    const Int n = V_embed.rows();
+   if (n < 1)
+      throw std::runtime_error("secondary_fan: at least one input point required");
+   const Matrix<Scalar> V_full = polytope::full_dim_projection(V_embed);
 
    SparseMatrix<Scalar> restrict_to = options["restrict_to"];
    if (!restrict_to.rows())
@@ -312,9 +315,13 @@ secondary_fan_impl(const Matrix<Scalar>& V_embed,
    for (const auto& index_pair : index_of)
       ordered_rays[index_pair.second] = index_pair.first;
 
+   IncidenceMatrix<> mc(rays_in_max_cones.size(), index_of.size(), entire(rays_in_max_cones));
+   if (mc.rows() == 0)
+      mc.resize(1,0);
+
    return BigObject("PolyhedralFan", mlist<Scalar>(),
                     "RAYS", ordered_rays,
-                    "MAXIMAL_CONES", IncidenceMatrix<>(rays_in_max_cones.size(), index_of.size(), entire(rays_in_max_cones)),
+                    "MAXIMAL_CONES", mc,
                     "LINEALITY_SPACE", null_space(ordered_rays / restrict_to));
 }
 

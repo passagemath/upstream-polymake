@@ -21,13 +21,13 @@
  */
 
 
+#include <list>
+#include <unordered_set>
+#include <unordered_map>
+
 #include "polymake/Array.h"
 #include "polymake/PowerSet.h"
 #include "polymake/GenericIO.h"
-
-#include "polymake/list"
-#include "polymake/hash_set"
-#include "polymake/hash_map"
 
 namespace pm {
 
@@ -49,7 +49,7 @@ class EquivalenceRelation {
 
 protected:
    mutable Array<Int> equiv_classes;
-   hash_set<Int> set_rep; 
+   std::unordered_set<Int> set_rep; 
    Set<Int> the_representatives;
    std::list<Int> erased_rep;
    mutable bool dirty;
@@ -74,8 +74,8 @@ public:
       , the_representatives(sequence(0, size))
       , dirty(true)
    {
-      for (auto v = entire(represent); !v.at_end(); ++v)
-         set_rep.insert(*v);
+     for (auto v : represent)
+         set_rep.insert(v);
    }
 
 protected:
@@ -88,7 +88,7 @@ protected:
          equiv_classes.resize(highest+1, -1);
       const Int the_rep = the_class.top().front();
       the_representatives += the_rep;
-      for (auto el = entire(the_class); !el.at_end(); ++el)
+      for (auto el : the_class)
          equiv_classes[*el]=the_rep;
    }
 
@@ -164,10 +164,10 @@ public:
    template <typename Container>
    void merge_classes(const Container& classes)
    {
-      auto c = entire(classes);
-      if (!c.at_end()) {
+      auto c = classes.begin();
+      if (c != classes.end()) {
          const Int c0 = *c;
-         for (++c; !c.at_end(); ++c)
+         for (++c; c != classes.end(); ++c)
             merge_classes(c0, *c);
       }
    }
@@ -205,7 +205,7 @@ public:
    PowerSet<Int> equivalence_classes() const
    {
       PowerSet<Int> classes;
-      hash_map<Int, Set<Int>> rep_map;
+      std::unordered_map<Int, Set<Int>> rep_map;
 
       for (Int i = 0, n = equiv_classes.size(); i < n; ++i)
          rep_map[representative(i)] += i;
@@ -245,8 +245,8 @@ public:
       PowerSet<Int> classes;
       is.top() >> classes;
       me.clear();
-      for (auto cl = entire(classes); !cl.at_end(); ++cl)
-         me.add_class(*cl);
+      for (auto cl : classes)
+         me.add_class(cl);
       return is.top();
    }
 };

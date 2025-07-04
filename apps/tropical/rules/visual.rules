@@ -66,12 +66,13 @@ user_method VISUAL(%Visual::TropicalPolytope::decorations) {
    my $chart = delete $decor->{Chart};
 
    my $used_pvs = new Set<Int>();
-   for my $i (0 .. $this->POLYTOPE_MAXIMAL_COVECTOR_CELLS->rows()-1) {
-      $used_pvs += $this->POLYTOPE_MAXIMAL_COVECTOR_CELLS->row($i);
+   for my $i (0 .. $this->DOME->TROPICAL_SPAN_MAXIMAL_COVECTOR_CELLS->rows()-1) {
+      $used_pvs += $this->DOME->TROPICAL_SPAN_MAXIMAL_COVECTOR_CELLS->row($i);
    }
 
-   my $vertices = new Matrix<Scalar>($this->PSEUDOVERTICES->minor($used_pvs,All));
-   my $cells = $this->POLYTOPE_MAXIMAL_COVECTOR_CELLS->minor(All, $used_pvs);
+   my $vertices = new Matrix<Scalar>($this->DOME->VERTICES->minor($used_pvs,All));
+   canonicalize_vertices_to_leading_zero($vertices);
+   my $cells = $this->DOME->TROPICAL_SPAN_MAXIMAL_COVECTOR_CELLS->minor(All, $used_pvs);
 
    # the order is crucial here
    my @pseudovertex_colors = pseudovertex_colors($this->POINTS, $vertices, delete $decor->{PseudovertexColor}, delete $decor->{GeneratorColor});
@@ -97,13 +98,15 @@ user_method VISUAL_SUBDIVISION(%Visual::TropicalPolytope::decorations) {
 
    my $chart = delete $decor->{"Chart"};
 
-   my $vertices = tdehomog($this->PSEUDOVERTICES,$chart);
-   my $cells = $this->MAXIMAL_COVECTOR_CELLS;
-   my @pseudovertex_colors = pseudovertex_colors($this->POINTS, $this->PSEUDOVERTICES, delete $decor->{PseudovertexColor}, delete $decor->{GeneratorColor});
+   my $dome_rays = new Matrix<Scalar>($this->DOME->VERTICES);
+   canonicalize_vertices_to_leading_zero($dome_rays);
+   my @pseudovertex_colors = pseudovertex_colors($this->POINTS, $dome_rays, delete $decor->{PseudovertexColor}, delete $decor->{GeneratorColor});
    foreach (keys %$decor) {
       $decor->{s/Pseudovertex/Vertex/r} = delete $decor->{$_};
    }
 
+   my $vertices = tdehomog($this->DOME->VERTICES, $chart);
+   my $cells = $this->DOME->MAXIMAL_COVECTOR_CELLS;
    my $p = new fan::PolyhedralComplex(VERTICES=>$vertices, MAXIMAL_POLYTOPES=>$cells);
    $p->VISUAL(VertexColor => \@pseudovertex_colors, $decor);
 }

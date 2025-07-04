@@ -1,3 +1,30 @@
+=== polymake 4.14 ===
+
+-- distribution --
+  * improve compatibility with c++20
+
+-- common --
+  * unimodular: fix for non-full-dimensional cases
+
+-- fan --
+  * secondary_fan: fix corner cases
+
+-- fulton --
+  * Remove bogus ampleness rule
+
+-- graph --
+  * PhylogeneticTree: improve input checks
+
+-- polytope --
+  * smooth_vertices: new client
+  * DELZANT: new property
+  * billera_lee: fix corner cases
+
+-- tropical --
+  * Cone: refactoring and fixes for DOME, COVECTORs and PSEUDOVERTICES
+  * Polytope: fix vertices computation
+  * Hypersurface: fixes for monomials and binomials
+
 === polymake 4.13 ===
 
 -- distribution --

@@ -27,9 +27,6 @@
 
 namespace polymake { namespace tropical {
 
-// FIXME: this client should be remodeled with support, vector difference, covector computation
-// Shouldn't the output be a set of vectors (matrix)?
-
 /*
  * @brief Computes the sectors of the dual hyperplane centered at u that contain z.
  * @return Set<Int>, subset of [0,... number of coordinates of u -1]
@@ -61,28 +58,28 @@ Set<Int> containing_sectors(const GenericVector<VectorTop, TropicalNumber<Additi
 }
 
 /*
- * @brief Computes the set of tropical vertices from a matrix of tropical points
- * in canonical form.
- * @return Set<Int> The subset of row indices corresponding to vertices.
+ * Finds the tropical vertices by checking exposedness as in
+ * Joswig: Essential of Tropical Combinatorics, Prop 5.40
+ * @return Set<Int> and Matrix<TropicalNumber<.>>, subset of row indices and actual matrix of tropical vertices
  */
 template <typename Addition, typename Scalar>
 void discard_non_vertices(BigObject cone)
 {
    Matrix<TropicalNumber<Addition, Scalar>> V = cone.give("POINTS");
    const Int n = V.rows();
+   const Int d = V.cols();
    Set<Vector<TropicalNumber<Addition, Scalar>>> vertex_coords;
    Set<Int> vertex_indices;
 
    for (Int i = 0; i < n; ++i) {
       if (is_zero(V.row(i))) continue;
       if (vertex_coords.contains(V.row(i))) continue; // notice that it is possible that a point arises more than once
-      Int no_of_nonzero = attach_selector(V.row(i), operations::non_zero()).size();
       Set<Int> sectors;
-      for (Int j = 0; sectors.size()<no_of_nonzero && j<n; ++j) {
+      for (Int j = 0; sectors.size()<d && j<n; ++j) {
          if (V.row(j)==V.row(i)) continue;
          sectors += containing_sectors(V.row(j), V.row(i));
       }
-      if (sectors.size() < no_of_nonzero) {
+      if (sectors.size() < d) {
          vertex_coords+=V.row(i);
          vertex_indices+=i;
       }

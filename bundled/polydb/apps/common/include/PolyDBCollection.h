@@ -364,11 +364,11 @@ class PolyDBCollection {
         bson_append_value(values,std::to_string(i++).c_str(),-1,bson_iter_value (&sub_iter));
       }
 
-      // bson_array_as_json seems to be deprecated, but none of the two replacements
-      // bson_as_relaxed_extended_json or beson_as_canonical_extended_json can produce 
-      // a json with a top-level array
-      // so we need to hope that the function will persist
+#if BSON_CHECK_VERSION(1,24,0)
+      std::string ret = to_string_and_free(bson_array_as_relaxed_extended_json(values, nullptr));
+#else
       std::string ret = to_string_and_free(bson_array_as_json(values, nullptr));
+#endif
       bson_destroy(values);
       bson_destroy(&reply);
 

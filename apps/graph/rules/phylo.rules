@@ -451,8 +451,8 @@ declare object PhylogeneticTree<Scalar=Rational> : Graph<Undirected> {
       $this -> EQUIDISTANT = $is_equidistant;
    }
    weight 1.10;
-
-   rule ADJACENCY, EDGE_LENGTHS, LABELS, LEAVES, NODE_HEIGHTS: COPHENETIC_MATRIX, TAXA {
+   
+   rule initial: COPHENETIC_MATRIX, TAXA {
       my $n = $this -> COPHENETIC_MATRIX -> rows;
       if ($n != $this -> COPHENETIC_MATRIX -> cols) {
          die "Error: Cophenetic matrix is not square.";
@@ -482,7 +482,13 @@ declare object PhylogeneticTree<Scalar=Rational> : Graph<Undirected> {
             }
           }
       }
-
+   }
+   precondition : exists(COPHENETIC_MATRIX);
+   precondition : exists(TAXA);
+   
+   rule ADJACENCY, EDGE_LENGTHS, LABELS, LEAVES, NODE_HEIGHTS: COPHENETIC_MATRIX, TAXA {
+      my $n = $this -> COPHENETIC_MATRIX -> rows;
+      my $scalarType = typeof Scalar;
       my $ga = new GraphAdjacency<Undirected>();
       my $el = new EdgeMap<Undirected, Scalar>($ga);
       my $la = new NodeMap<Undirected, String>($ga);

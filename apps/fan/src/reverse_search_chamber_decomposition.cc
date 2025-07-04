@@ -29,6 +29,7 @@ class AllCache {
    private:
       mutable Map<Bitset, BigObject> signature2Cell;
       const Matrix<Scalar>& hyperplanes, supportIneq, supportEq;
+      const Vector<Scalar> apv;
 
       BigObject& get_chamber(const Bitset& signature) const {
          if(!signature2Cell.exists(signature)){
@@ -43,8 +44,8 @@ class AllCache {
       }
 
    public:
-      AllCache(const Matrix<Scalar>& H, const Matrix<Scalar>& SI, const Matrix<Scalar> SE):
-         hyperplanes(H), supportIneq(SI), supportEq(SE)
+      AllCache(const Matrix<Scalar>& H, const Matrix<Scalar>& SI, const Matrix<Scalar>& SE, const Vector<Scalar> apv_in):
+         hyperplanes(H), supportIneq(SI), supportEq(SE), apv(apv_in)
       {}
 
       Matrix<Scalar> get_facets(const Bitset& signature) const {
@@ -76,6 +77,14 @@ class AllCache {
             }
          }
          return false;
+      }
+
+      const Matrix<Scalar>& get_support_eq() const{
+         return supportEq;
+      }
+
+      const Vector<Scalar>& all_positive_eq() const {
+         return apv;
       }
 };
 
@@ -191,7 +200,12 @@ ListReturn generic(BigObject HA) {
    BigObject support = HA.give("SUPPORT");
    const Matrix<Scalar> supportIneq = support.give("FACETS | INEQUALITIES");
    const Matrix<Scalar> supportEq = support.give("LINEAR_SPAN | EQUATIONS");
-   AllCache<Scalar> AC(hyp, supportIneq, supportEq);
+   const Matrix<Scalar> supportGens = support.give("RAYS | INPUT_RAYS");
+   Vector<Scalar> apv = zero_vector<Scalar>(supportGens.cols());
+   for(const auto& r: rows(supportGens)){
+      apv += r;
+   }
+   AllCache<Scalar> AC(hyp, supportIneq, supportEq, apv);
    
    // Find initial chamber.
    Bitset sig;

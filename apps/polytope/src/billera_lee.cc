@@ -291,7 +291,9 @@ Array<Rational> obtain_realization(Int n, Int d, Int v)
 {
    // compute the inequalities that need to be fulfilled in order for the magic point to exist
    Array<Polynomial<Rational, Int>> ineqs = get_inequalities(n, d, v);
-
+   if (ineqs.size()==0) // no constraints; pick first few integers
+      return Array<Rational>(sequence(0,v));
+         
    // we want t_0 = 0, so we need to partially evaluate the guys in ineqs at 0
    Array<Polynomial<Rational, Int>> p_eval(ineqs.size());
    Map<Int, Rational> t_0;

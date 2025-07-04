@@ -118,9 +118,10 @@ public:
 template <typename Addition, typename Scalar>
 void compute_covector_decomposition(BigObject cone, OptionSet options) {
   const bool compute_only_tropical_span = options["compute_only_tropical_span"];
+  BigObject dome = cone.give("DOME");
 
-  const Array<IncidenceMatrix<> >& pseudovertex_covectors = cone.give("PSEUDOVERTEX_COVECTORS");
-  const IncidenceMatrix<>& max_covector_cells = cone.give("MAXIMAL_COVECTOR_CELLS");
+  const Array<IncidenceMatrix<> >& pseudovertex_covectors = dome.give("VERTEX_COVECTORS");
+  const IncidenceMatrix<>& max_covector_cells = dome.give("MAXIMAL_COVECTOR_CELLS");
   const Matrix< TropicalNumber<Addition,Scalar> >& points = cone.give("POINTS");
 
   Lattice<CovectorDecoration> init_lattice;
@@ -159,7 +160,7 @@ void compute_covector_decomposition(BigObject cone, OptionSet options) {
   Array<Set<Int>> cone_max_cells( n_max_nodes, entire(attach_member_accessor(max_nodes,
                      ptr2type<CovectorDecoration, Set<Int>, &CovectorDecoration::face>())));
   if (compute_only_tropical_span) {
-    cone.take("POLYTOPE_MAXIMAL_COVECTOR_CELLS") << cone_max_cells;
+    dome.take("TROPICAL_SPAN_MAXIMAL_COVECTOR_CELLS") << cone_max_cells;
     cone.take("POLYTOPE_MAXIMAL_COVECTORS") << max_covectors;
     cone.take("POLYTOPE_COVECTOR_DECOMPOSITION") << result;
   } else {

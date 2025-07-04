@@ -134,7 +134,9 @@ public:
 
     bool operator ==(const exponent_vec& rhs) const;
     bool operator |(const exponent_vec& rhs) const;
-
+    inline bool operator ==(const binomial& rhs) const {
+       return binomial::operator==(static_cast<const exponent_vec&>(rhs));
+    }
     // General member functions:
     binomial lcm(const exponent_vec& rhs) const;
 

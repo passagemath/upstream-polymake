@@ -873,7 +873,7 @@ sub check_brew {
    my $local_arch = `uname -m`;
    chomp $local_arch;
    if ( $BrewBase eq "default" || ( $local_arch == "x86_64" && $BrewBase eq "/usr/local" ) || ( $local_arch == "arm64" && $BrewBase eq '/opt/homebrew' ) ) {
-      $BrewBase = $Arch == "x86_64" ? '/usr/local' : '/opt/homebrew';
+      $BrewBase = $local_arch eq "x86_64" ? '/usr/local' : '/opt/homebrew';
       unless (-f "$BrewBase/bin/brew") {
          die "brew installation corrupt: $BrewBase/bin/brew not found\n";
       }
@@ -984,20 +984,23 @@ sub collect_compiler_specific_options {
       $CflagsSuppressWarnings="-Wno-unused-result";
       # gcc-specific flags
       $CXXFLAGS .= " -Wshadow -Wlogical-op -Wconversion -Wzero-as-null-pointer-constant -Wno-parentheses -Wno-error=unused-function";
-      if (v_cmp($GCCversion, "6.3.0") >= 0 && v_cmp($GCCversion, "7.0.0") < 0) {
+      if (v_cmp($GCCversion, "8") < 0) {
+         $CXXFLAGS .= " -Wno-float-conversion -Wno-strict-overflow";
+      }
+      if (v_cmp($GCCversion, "6.3") >= 0 && v_cmp($GCCversion, "7") < 0) {
          $CXXFLAGS .= " -Wno-maybe-uninitialized";
       }
-      if (v_cmp($GCCversion, "9.1.0") >= 0) {
+      if (v_cmp($GCCversion, "9.1") >= 0) {
          $CXXFLAGS .= " -Wno-stringop-overflow";
          $CflagsSuppressWarnings.=" -Wno-stringop-overflow";
       }
-      if (v_cmp($GCCversion, "10.0.0") >= 0) {
+      if (v_cmp($GCCversion, "10") >= 0) {
          $CXXFLAGS .= " -Wno-array-bounds";
       }
-      if (v_cmp($GCCversion, "11.0.0") >= 0) {
+      if (v_cmp($GCCversion, "11") >= 0) {
          $CXXFLAGS .= " -Wno-maybe-uninitialized -Wno-free-nonheap-object";
       }
-      if (v_cmp($GCCversion, "14.0.0") >= 0) {
+      if (v_cmp($GCCversion, "14") >= 0) {
          # due to false positives
          $CXXFLAGS .= " -Wno-dangling-reference";
       }

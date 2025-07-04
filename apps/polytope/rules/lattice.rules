@@ -307,6 +307,13 @@ object Polytope<Rational> {
     }
     precondition : CONE_DIM { $this->CONE_DIM > 2; }
 
+    rule DELZANT : SIMPLE, POINTED, CONE_DIM, N_VERTICES, FAR_FACE, GRAPH.ADJACENCY, GRAPH.EDGE_DIRECTIONS {
+       $this->DELZANT = false unless $this->SIMPLE && $this->POINTED;
+       my $dv = smooth_vertices($this);
+       $this->DELZANT = $dv->size == $this->N_VERTICES - $this->FAR_FACE->size;
+    }
+    weight 3.10;
+    
     # @category Geometry
     # returns the Minkowski summand of a polytope P given by
     # a coefficient vector to the rays of the [[MINKOWSKI_CONE]].
@@ -711,28 +718,7 @@ object_specialization Polytope::Lattice {
     }
     weight 0.1;
 
-    rule SMOOTH : N_VERTICES, GRAPH.ADJACENCY, GRAPH.EDGE_DIRECTIONS, SIMPLE {
-
-        if (!$this->SIMPLE) { $this->SMOOTH = false; return; }
-
-        for ( my $v=0; $v < $this->N_VERTICES; ++$v ) {
-            my $m=new Matrix<Integer>;
-            for (my $e = entire($this->GRAPH->ADJACENCY->out_edges($v)); $e; ++$e) {
-                $m /= primitive($this->GRAPH->EDGE_DIRECTIONS->[$$e]);
-            }
-
-            my $g = 0;
-            foreach (@{all_subsets_of_k(sequence(1, max(0, $m->cols-1)), $m->rows)}) {
-                $g = gcd($g,abs(det($m->minor(All,$_))));
-                last if ($g == 1);
-            }
-
-            if ($g != 1) { $this->SMOOTH = 0; return; }
-        }
-
-        $this->SMOOTH = true;
-    }
-    weight 3.10;
+    rule SMOOTH = DELZANT;
 
     rule POLAR_SMOOTH : VERTICES, VERTICES_IN_FACETS, INTERIOR_LATTICE_POINTS, SIMPLICIAL, CONE_DIM, CONE_AMBIENT_DIM {
 

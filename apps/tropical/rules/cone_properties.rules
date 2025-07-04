@@ -45,10 +45,10 @@ object Polytope {
 	# @category Geometry
 	# Vertices of the tropical convex hull, a submatrix of [[POINTS]]
 	property VERTICES : Matrix<TropicalNumber<Addition,Scalar>> {
-           sub canonical { &canonicalize_to_leading_zero; }
+     sub canonical { &canonicalize_to_leading_zero; }
 	}
 
-        # permuting the [[VERTICES]]
+  # permuting the [[VERTICES]]
 	permutation VertexPerm : PermBase;
 
 	rule VertexPerm.PERMUTATION : VertexPerm.VERTICES, VERTICES {
@@ -62,28 +62,27 @@ object Polytope {
 	weight 1.10;
 
 
-        # @category Input property
-        # Inequalities giving rise to the polytope; redundancies are allowed.
-        # They must be encoded as a pair of matrices.
-        # The pair (A,B) encodes the inequality //A//x ~ //B//x,
-        # where ~ is <= for min and >= for max.
-        # All vectors in this section must be non-zero.
-        # Dual to [[POINTS]].
-        #
-        # Input section only.  
-        property INEQUALITIES : Pair<Matrix<TropicalNumber<Addition,Scalar>>,Matrix<TropicalNumber<Addition,Scalar>>>;
+  # @category Input property
+  # Inequalities giving rise to the polytope; redundancies are allowed.
+  # They must be encoded as a pair of matrices.
+  # The pair (A,B) encodes the inequality //A//x ~ //B//x,
+  # where ~ is <= for min and >= for max.
+  # All vectors in this section must be non-zero.
+  # Dual to [[POINTS]].
+  #
+  # Input section only.  
+  property INEQUALITIES : Pair<Matrix<TropicalNumber<Addition,Scalar>>,Matrix<TropicalNumber<Addition,Scalar>>>;
 
 
-        # @category Geometry
-        # Some point belonging to the polyhedron.
-        property VALID_POINT : Vector<TropicalNumber<Addition,Scalar>> {
-            sub canonical { &canonicalize_to_leading_zero; }
-        }
+  # @category Geometry
+  # Some point belonging to the polyhedron.
+  property VALID_POINT : Vector<TropicalNumber<Addition,Scalar>> {
+      sub canonical { &canonicalize_to_leading_zero; }
+  }
 
-        # @category Geometry
-        # True if the polyhedron is not empty.
-        property FEASIBLE : Bool;
-        
+  # @category Geometry
+  # True if the polyhedron is not empty.
+  property FEASIBLE : Bool;
         
 	# @category Geometry
 	# Entries correspond to [[VERTICES]]. They describe for each vertex, what its row
@@ -91,32 +90,26 @@ object Polytope {
 	property VERTICES_IN_POINTS : Array<Int>;
 
 	# @category Geometry
-	# Pseudovertices are the vertices of the type decomposition of the tropical torus induced by [[POINTS]].
-	# They are projections of the vertices of [[ENVELOPE]]. Note that each pseudovertex is given in tropical
-	# homogeneous coordinates with a leading 1 or 0, depending on whether it is a vertex or a ray.
-	property PSEUDOVERTICES : Matrix<Scalar> {
-		sub canonical { &canonicalize_vertices_to_leading_zero; }
+	# Pseudovertices are the vertices of the covector decomposition of the tropical torus induced by [[POINTS]].
+	# They are projections of the vertices of [[ENVELOPE]]. 
+	property PSEUDOVERTICES : Matrix<TropicalNumber<Addition,Scalar>> {
+		sub canonical { &canonicalize_to_leading_zero; }
 	}
 
-        # @category Geometry
-	# Subset of the [[PSEUDOVERTICES]] which are not contained in the tropical projective torus.
-        
-	property FAR_PSEUDOVERTICES : Set;
+	# @category Combinatorics
+	# The covectors of the maximal cells of the torus subdivision. Entries correspond
+	# to rows of [[DOME.MAXIMAL_COVECTOR_CELLS]].
+	property MAXIMAL_COVECTORS : Array<IncidenceMatrix>;
 
 	# @category Combinatorics
-	# These are the maximal cells of the covector decomposition of the tropical torus with
-	# respect to [[POINTS]].
-	# Each row corresponds to a maximal cell, each column to an element of [[PSEUDOVERTICES]].
-
-
-        
-        
-	property MAXIMAL_COVECTOR_CELLS : IncidenceMatrix;
+	# The covectors of the maximal cells of the polytope subdivision. Entries correspond
+	# to rows of [[DOME.TROPICAL_SPAN_MAXIMAL_COVECTOR_CELLS]].
+	property POLYTOPE_MAXIMAL_COVECTORS : Array<IncidenceMatrix>;
 
 	# @category Combinatorics
-	# This is the face lattice of the polyhedral complex, whose vertices are [[PSEUDOVERTICES]] and
+	# This is the face lattice of the polyhedral complex, whose vertices are [[DOME.VERTICES]] and
 	# whose cells are the cells of the covector decomposition. For each face in this lattice, we save the following information:
-	# 1) What PSEUDOVERTICES make up this face, i.e. a Set<Int>
+	# 1) What [[DOME.VERTICES]] make up this face, i.e. a Set<Int>
 	# 2) What is the covector of this face, i.e. an IncidenceMatrix (whose rows correspond to coordinates and
 	# whose columns to [[POINTS]]).
 	# NOTE: This lattice does not contain any far faces of the polyhedral cells, as they do not have well-defined covectors.
@@ -126,22 +119,6 @@ object Polytope {
 	# This is a sublattice of [[TORUS_COVECTOR_DECOMPOSITION]], containing only the cells that belong to the tropical span
 	# of [[POINTS]].
 	property POLYTOPE_COVECTOR_DECOMPOSITION : CovectorLattice;
-
-	# @category Combinatorics
-	# This is a description of the tropical polytope as a polyhedral complex. Each 
-	# row is a maximal cell of the covector subdivision of the tropical polytope. Indices refer to
-	# [[PSEUDOVERTICES]]. 
-	property POLYTOPE_MAXIMAL_COVECTOR_CELLS : IncidenceMatrix;
-
-	# @category Combinatorics
-	# The covectors of the maximal cells of the torus subdivision. Entries correspond
-	# to rows of [[MAXIMAL_COVECTOR_CELLS]].
-	property MAXIMAL_COVECTORS : Array<IncidenceMatrix>;
-
-	# @category Combinatorics
-	# The covectors of the maximal cells of the polytope subdivision. Entries correspond
-	# to rows of [[POLYTOPE_MAXIMAL_COVECTOR_CELLS]].
-	property POLYTOPE_MAXIMAL_COVECTORS : Array<IncidenceMatrix>;
 
 	# @category Visualization
 	# Unique names assigned to the [[VERTICES]].
@@ -164,21 +141,45 @@ object Polytope {
 	# in the following manner: For each point (p_0,...,p_d) we get the linear polynomial
 	# sum_{i=1}^d (1/p_i) * x_i, where sum is the DUAL tropical addition and * and /  is regular
 	# addition and subtraction, respectively.
-	property DOME : polytope::Polytope<Scalar>;
+	property DOME : polytope::Polytope<Scalar> {
+
+    # @category Combinatorics
+    # These are the maximal cells of the covector decomposition of the tropical torus with
+    # respect to [[POINTS]].
+    # Each row corresponds to a maximal cell, each column to an element of [[Polytope::VERTICES]].
+		property MAXIMAL_COVECTOR_CELLS : IncidenceMatrix;
+
+    # @category Combinatorics
+    # This is a description of the tropical polytope as a polyhedral complex. Each 
+    # row is a maximal cell of the covector subdivision of the tropical polytope. Indices refer to
+    # [[Polytope::VERTICES]]. 
+    property TROPICAL_SPAN_MAXIMAL_COVECTOR_CELLS : IncidenceMatrix;
+
+    # @category Geometry
+    # Subset of the [[Polytope::VERTICES]] which are contained in the tropical polytope.
+    property TROPICAL_POLYTOPE_VERTICES : Set;
+
+    # @category Combinatorics
+    # Covectors of [[Polytope::VERTICES]] relative to [[POINTS]].
+    # Each type is encoded as an Incidence matrix, where rows correspond to coordinates and
+    # columns to [[POINTS]]. If the i-th row is a set S, that means that this pseudovertex is
+    # in the i-th sector of all points indexed by S.
+    # For bounded vertices, the type is computed as usual. For unbounded rays (i.e. starting with a 0), the type
+    # is computed as follows. Let g be a generator, with infinite entries at positions J and let the ray be
+    # e_J = sum_{j in J} +- e_j (the sign being the orientation of the addition).
+    # If J is contained in K, the ray is "contained" in all sectors of g.
+    # Otherwise, the ray is "contained" in the sectors indexed by g.
+    # NOTE: The latter is an artificial definition in the sense that it is not compatible with intersecting
+    # faces of the covector lattice. However, it is correct in the sense that faces spanned by a
+    # list of pseudovertices have as covector the intersection of the respective covectors.
+    property VERTEX_COVECTORS : Array<IncidenceMatrix>;
+	}
 
 	# @category Combinatorics
 	# Types of [[PSEUDOVERTICES]] relative to [[POINTS]].
 	# Each type is encoded as an Incidence matrix, where rows correspond to coordinates and
 	# columns to [[POINTS]]. If the i-th row is a set S, that means that this pseudovertex is
 	# in the i-th sector of all points indexed by S.
-	# For bounded vertices, the type is computed as usual. For unbounded rays (i.e. starting with a 0), the type
-	# is computed as follows. Let g be a generator, with infinite entries at positions J and let the ray be
-	# e_J = sum_{j in J} +- e_j (the sign being the orientation of the addition).
-	# If J is contained in K, the ray is "contained" in all sectors of g.
-	# Otherwise, the ray is "contained" in the sectors indexed by g.
-	# NOTE: The latter is an artificial definition in the sense that it is not compatible with intersecting
-	# faces of the covector lattice. However, it is correct in the sense that faces spanned by a
-	# list of pseudovertices have as covector the intersection of the respective covectors.
 	property PSEUDOVERTEX_COVECTORS : Array<IncidenceMatrix>;
 
 	# @category Combinatorics
@@ -203,10 +204,11 @@ object Polytope {
 	# @param Int chart Which coordinate to normalize to 0. This is 0 by default.
 	# @return fan::PolyhedralComplex
 	user_method torus_subdivision_as_complex(;$=0) {
-            my ($cone,$chart) = @_;
-            return new fan::PolyhedralComplex(VERTICES=>tdehomog($cone->PSEUDOVERTICES,$chart),
-                                              MAXIMAL_POLYTOPES=>$cone->MAXIMAL_COVECTOR_CELLS,
-                                              LINEALITY_SPACE=>[]);
+    my ($P,$chart) = @_;
+    my $dome = $P->DOME;
+    return new fan::PolyhedralComplex(VERTICES=>tdehomog($dome->VERTICES,$chart),
+                                      MAXIMAL_POLYTOPES=>$dome->MAXIMAL_COVECTOR_CELLS,
+                                      LINEALITY_SPACE=>[]);
 	}
 
 	# @category Geometry
@@ -215,15 +217,21 @@ object Polytope {
 	# @param Int chart Which coordinate to normalize to 0. This is 0 by default.
 	# @return fan::PolyhedralComplex
 	user_method polytope_subdivision_as_complex(;$=0) {
-            my ($cone,$chart) = @_;
-            my $n = $cone->PSEUDOVERTICES->rows();
-            my $finite_indices = sequence(0,$n) - $cone->FAR_PSEUDOVERTICES;
-            my $finite_pseudovertices = new Matrix<Scalar>($cone->PSEUDOVERTICES->minor($finite_indices,All));
-            return new fan::PolyhedralComplex<Scalar>(VERTICES=>tdehomog($finite_pseudovertices,$chart),
-                                                      MAXIMAL_POLYTOPES=>$cone->POLYTOPE_MAXIMAL_COVECTOR_CELLS->minor(All, $finite_indices),
-                                                      LINEALITY_SPACE=>zero_matrix<Scalar>(0,$finite_pseudovertices->cols-1));
+    my ($P,$chart) = @_;
+    my $dome = $P->DOME;
+    my $n = $dome->VERTICES->rows();
+    my $indices = $dome->TROPICAL_POLYTOPE_VERTICES;
+    my $polytope_pseudovertices = new Matrix<Scalar>($P->DOME->VERTICES->minor($indices,All));
+    return new fan::PolyhedralComplex<Scalar>(VERTICES=>tdehomog($polytope_pseudovertices,$chart),
+                                              MAXIMAL_POLYTOPES=>$dome->TROPICAL_SPAN_MAXIMAL_COVECTOR_CELLS->minor(All, $indices),
+                                              LINEALITY_SPACE=>zero_matrix<Scalar>(0,$polytope_pseudovertices->cols-1));
 	}
 
+  user_method MAXIMAL_COVECTOR_CELLS = DOME.MAXIMAL_COVECTOR_CELLS;
+
+  user_method POLYTOPE_MAXIMAL_COVECTOR_CELLS = DOME.TROPICAL_SPAN_MAXIMAL_COVECTOR_CELLS;
+
+  user_method POLYTOPE_PSEUDOVERTICES = DOME.TROPICAL_POLYTOPE_VERTICES;
 
 }
 

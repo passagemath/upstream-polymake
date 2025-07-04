@@ -1525,12 +1525,12 @@ public:
    template <size_t i>
    decltype(auto) get_container(size_constant<i>)
    {
-      return concat_rows(this->hidden().template get_container(size_constant<i>()));
+      return concat_rows(this->hidden().get_container(size_constant<i>()));
    }
    template <size_t i>
    decltype(auto) get_container(size_constant<i>) const
    {
-      return concat_rows(this->hidden().template get_container(size_constant<i>()));
+      return concat_rows(this->hidden().get_container(size_constant<i>()));
    }
 
    ConcatRows& operator= (const ConcatRows& other) { return ConcatRows::generic_type::operator=(other); }

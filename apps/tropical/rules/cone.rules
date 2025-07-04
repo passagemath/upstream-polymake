@@ -27,32 +27,32 @@ object Polytope {
 	}
 	weight 0.1;
 
-	rule PROJECTIVE_AMBIENT_DIM : PSEUDOVERTICES {
-	    $this->PROJECTIVE_AMBIENT_DIM=$this->PSEUDOVERTICES->cols-2;
+	rule PROJECTIVE_AMBIENT_DIM : DOME.VERTICES {
+    $this->PROJECTIVE_AMBIENT_DIM=$this->DOME->VERTICES->cols-2;
 	}
 	weight 0.1;
 
 
 	# checking feasibility via a tropical linear program 
 	rule FEASIBLE, VALID_POINT  : INEQUALITIES {
-	    my $feasibility_pair = H_trop_input_feasible($this);
-	    $this->VALID_POINT = $feasibility_pair->first;
-	    $this->FEASIBLE = $feasibility_pair->second;
+    my $feasibility_pair = H_trop_input_feasible($this);
+    $this->VALID_POINT = $feasibility_pair->first;
+    $this->FEASIBLE = $feasibility_pair->second;
 	}
 	weight 3.1;
 	
 	# A Polytope defined by a non-empty set of [[VERTICES]] or [[POINTS]] is always [[FEASIBLE]].
 	rule FEASIBLE, VALID_POINT : VERTICES | POINTS {
-	    my $p=$this->give("VERTICES | POINTS");
-	    if ($p->rows > 0) {
-		$this->VALID_POINT(temporary) = $p->row(0);
-	    }
-	    $this->FEASIBLE = $this->give("VERTICES | POINTS")->rows > 0;
+    my $p=$this->give("VERTICES | POINTS");
+    if ($p->rows > 0) {
+      $this->VALID_POINT(temporary) = $p->row(0);
+    }
+    $this->FEASIBLE = $this->give("VERTICES | POINTS")->rows > 0;
 	}
 	weight 0.1;
 
 	rule VERTICES : INEQUALITIES {
-	    $this->VERTICES = V_trop_input($this);
+    $this->VERTICES = V_trop_input($this);
 	}
 	weight 6.10;
 
@@ -69,38 +69,63 @@ object Polytope {
 		$this->DOME = dome_hyperplane_arrangement($this->POINTS);
 	}
 
-	rule PSEUDOVERTICES, FAR_PSEUDOVERTICES, MAXIMAL_COVECTOR_CELLS : DOME {
-		extract_pseudovertices($this);
-	}
+  rule DOME.MAXIMAL_COVECTOR_CELLS : DOME.VERTICES, DOME.VERTICES_IN_FACETS, DOME.FAR_FACE {
+    my $dome = $this->DOME;
+    my $V = $dome->VERTICES;
+    my $vif = new Set<Set<Int>>(rows($dome->VERTICES_IN_FACETS));
+    my $ff = $dome->FAR_FACE;
 
-   rule TORUS_COVECTOR_DECOMPOSITION, MAXIMAL_COVECTORS : POINTS, PSEUDOVERTICES, PSEUDOVERTEX_COVECTORS, MAXIMAL_COVECTOR_CELLS, POLYTOPE_COVECTOR_DECOMPOSITION {
-      compute_covector_decomposition($this, compute_only_tropical_span=>0);
-   }
-   weight 6.10;
+    $dome->MAXIMAL_COVECTOR_CELLS = new IncidenceMatrix($vif - $ff);
+  }
 
-	rule POLYTOPE_COVECTOR_DECOMPOSITION, POLYTOPE_MAXIMAL_COVECTOR_CELLS, POLYTOPE_MAXIMAL_COVECTORS : POINTS, PSEUDOVERTICES, PSEUDOVERTEX_COVECTORS, MAXIMAL_COVECTOR_CELLS {
-		compute_covector_decomposition($this, compute_only_tropical_span=>1);
-	}
-	weight 6.10;
-
-	rule MAXIMAL_COVECTORS : MAXIMAL_COVECTOR_CELLS, PSEUDOVERTICES, POINTS {
-		compute_maximal_covectors($this);
-	}
-	weight 2.10;
+  rule PSEUDOVERTICES : DOME.VERTICES, DOME.FAR_FACE {
+    my $V = $this->DOME->VERTICES;
+    $this->PSEUDOVERTICES = $V->minor(~$this->DOME->FAR_FACE, ~scalar2set(0));
+  }
 
 	rule PSEUDOVERTEX_COVECTORS : PSEUDOVERTICES, POINTS {
-		$this->PSEUDOVERTEX_COVECTORS=covectors_of_scalar_vertices($this->PSEUDOVERTICES, $this->POINTS);
+		$this->PSEUDOVERTEX_COVECTORS = covectors($this->PSEUDOVERTICES, $this->POINTS);
 	}
 	weight 1.10;
 
 	rule PSEUDOVERTEX_COARSE_COVECTORS : PSEUDOVERTICES, POINTS {
-		$this->PSEUDOVERTEX_COARSE_COVECTORS=coarse_covectors_of_scalar_vertices($this->PSEUDOVERTICES, $this->POINTS);
+		$this->PSEUDOVERTEX_COARSE_COVECTORS=coarse_covectors($this->PSEUDOVERTICES, $this->POINTS);
 	}
 	weight 1.10;
+
+  rule DOME.TROPICAL_POLYTOPE_VERTICES : DOME.VERTEX_COVECTORS {
+    my $pv = new Set();
+    for (my $i=0; $i < $this->DOME->VERTEX_COVECTORS->size; $i++) {
+       $pv += $i
+       if (0 == grep {$_->size==0} @{rows($this->DOME->VERTEX_COVECTORS->[$i])});
+    }
+    $this->DOME->TROPICAL_POLYTOPE_VERTICES = $pv;
+  }
+
+   rule TORUS_COVECTOR_DECOMPOSITION, MAXIMAL_COVECTORS : POINTS, DOME.VERTICES, DOME.VERTEX_COVECTORS, DOME.MAXIMAL_COVECTOR_CELLS, POLYTOPE_COVECTOR_DECOMPOSITION {
+      compute_covector_decomposition($this, compute_only_tropical_span=>0);
+   }
+   weight 6.10;
+
+	rule POLYTOPE_COVECTOR_DECOMPOSITION, DOME.TROPICAL_SPAN_MAXIMAL_COVECTOR_CELLS, POLYTOPE_MAXIMAL_COVECTORS : POINTS, DOME.VERTICES, DOME.VERTEX_COVECTORS, DOME.MAXIMAL_COVECTOR_CELLS {
+		compute_covector_decomposition($this, compute_only_tropical_span=>1);
+	}
+	weight 6.10;
+
+	rule MAXIMAL_COVECTORS : DOME.MAXIMAL_COVECTOR_CELLS, DOME.VERTICES, POINTS {
+		compute_maximal_covectors($this);
+	}
+	weight 2.10;
+
+	rule DOME.VERTEX_COVECTORS : DOME.VERTICES, POINTS {
+		$this->DOME->VERTEX_COVECTORS = covectors_of_scalar_vertices($this->DOME->VERTICES, $this->POINTS);
+	}
+	weight 1.10;
+
    
-   # In case [[VERTICES]] are known but [[POINTS]] are not, we set [[POINTS]] = [[VERTICES]].
-   # This allows to visualize a Polytope that was initialized via [[INEQUALIES]] with its coarsets [[POLYTOPE_COVECTOR_DECOMPOSITION]]. 
-   rule POINTS = VERTICES;
+  # In case [[VERTICES]] are known but [[POINTS]] are not, we set [[POINTS]] = [[VERTICES]].
+  # This allows to visualize a Polytope that was initialized via [[INEQUALIES]] with its coarsets [[POLYTOPE_COVECTOR_DECOMPOSITION]]. 
+  rule POINTS = VERTICES;
 
 }
 

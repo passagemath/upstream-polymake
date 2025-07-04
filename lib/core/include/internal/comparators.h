@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include "polymake/internal/comparators_ops.h"
 #include "polymake/internal/matrix_rows_cols.h"
 #include "polymake/TransformedContainer.h"

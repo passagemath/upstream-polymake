@@ -526,14 +526,20 @@ property G_DIM : Int;
 # Volume of a geometric simplicial complex.
 property VOLUME : Scalar;
 
-# A geometric simplicial complex is unimodular if all simplices have unit normalized volume.
+# A geometric simplicial complex is unimodular if all simplices have unit
+# normalized volume.  If the simplicial complex is lower dimensional, each
+# simplex is considered in its affine hull.
+#
 # @example Unit square, triangulated.
 # > $C = new GeometricSimplicialComplex(COORDINATES=>[[0,0],[1,0],[0,1],[1,1]], FACETS=>[[0,1,2],[1,2,3]]);
 # > print $C->UNIMODULAR
 # | true
 property UNIMODULAR : Bool;
 
-# Count how many simplices of a geometric simplicial complex are unimodular.
+# Count how many simplices of a geometric simplicial complex are unimodular. If
+# the simplicial complex is lower dimensional, each simplex is considered in
+# its affine hull.
+#
 # @example Non-regular quadrangle, triangulated.
 # > $C = new GeometricSimplicialComplex(COORDINATES=>[[0,0],[1,0],[0,1],[2,1]],FACETS=>[[0,1,2],[1,2,3]]);
 # > print $C->N_UNIMODULAR
@@ -570,13 +576,13 @@ rule VOLUME : FACETS, COORDINATES, DIM {
 rule UNIMODULAR : FACETS, COORDINATES {
     my $C = $this->COORDINATES;
     my $n = $C->rows();
-    $this->UNIMODULAR=unimodular( ones_vector<Rational>($n)|$C, $this->FACETS );
+    $this->UNIMODULAR=unimodular( ones_vector<Rational>($n)|$C, $this->FACETS, false );
 }
 
 rule N_UNIMODULAR : FACETS, COORDINATES {
     my $C = $this->COORDINATES;
     my $n = $C->rows();
-    $this->N_UNIMODULAR=n_unimodular( ones_vector<Rational>($n)|$C, $this->FACETS );
+    $this->N_UNIMODULAR=n_unimodular( ones_vector<Rational>($n)|$C, $this->FACETS, false );
 }
 
 property BOUNDARY = override : self;

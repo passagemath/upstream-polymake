@@ -461,7 +461,7 @@ void BSGS<PERM, TRANS>::stripRedundantBasePoints(int minPos) {
  * stabilizer chain are next to each other.
  */
 template <class PERM>
-class StrongGeneratingSetSorter : public std::binary_function<typename PERM::ptr, typename PERM::ptr, bool> {
+class StrongGeneratingSetSorter {
 public:
 	/**
 	 * @param baseBegin begin-iterator(dom_int) to the base relative to which the strong generating set is to be sorted

@@ -7,6 +7,8 @@
 // Moreover, older clangs produce strange errors even in combination with libstdc++.
 // For this configuration, we include a minimal implementation just covering our needs.
 
+#if __cplusplus < 201703L
+
 #if defined(__clang__) && (defined(_LIBCPP_STD_VER) || __clang_major__ < 4)
 
 #include "polymake/internal/type_union.h"
@@ -76,8 +78,6 @@ using pm::make_optional;
 
 #else // GCC or clang >= 4
 
-#if __cplusplus < 201703L
-
 # include <experimental/optional>
 
 namespace polymake {
@@ -90,6 +90,8 @@ using std::experimental::optional;
 using std::experimental::nullopt;
 using std::experimental::make_optional;
 }
+
+#endif
 
 #else
 
@@ -105,8 +107,6 @@ using std::optional;
 using std::nullopt;
 using std::make_optional;
 }
-
-#endif
 
 #endif
 

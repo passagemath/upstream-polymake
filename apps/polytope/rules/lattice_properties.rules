@@ -114,6 +114,10 @@ property N_INTERIOR_LATTICE_POINTS : Integer;
 # @category Lattice points in cones
 # The minimal width of the polytope.
     property LATTICE_WIDTH : Scalar;
+
+# @category Lattice points in cones
+# The set of [[VERTICES]] which are integral and simple such that the edge directions span a smooth cone.
+    property SMOOTH_VERTICES : Set<Int>;
 }
 
 object Polytope<Rational> {
@@ -132,7 +136,6 @@ object Polytope<Rational> {
 property MINKOWSKI_CONE : polytope::Cone<Rational>;
 
 
-
 # @category Lattice points in cones
 # The Ehrhart quasi-polynomial of a rational polytope.
 # Coefficients are periodic functions of integral period.
@@ -144,6 +147,12 @@ property MINKOWSKI_CONE : polytope::Cone<Rational>;
 # | 2/9*t^2 + 2/9*t + 5/9
 # | 2/9*t^2 -2/9*t + 5/9
 property EHRHART_QUASI_POLYNOMIAL : Array<UniPolynomial<Rational>>;
+
+
+# @category Lattice points in cones
+# A rational polytope is called Delzant if it is pointed, simple, and the edge-directions
+# at each bounded vertex form a lattice basis.
+property DELZANT : Bool;
 
 }
 
