@@ -92,7 +92,7 @@ edge [shape=plaintext, fontsize=14];
    print DOT_FILE "\n\n".'}'; # closing bracket was removed by sed
    close DOT_FILE;
 
-   my $command_txt2 = "$Graphviz::dot -Tps -o$filename.ps $filename.dot; $Postscript::viewer $filename.ps \&";
+   my $command_txt2 = "$Graphviz::dot -Tpdf -o$filename.pdf $filename.dot; $Visual::pdfviewer $filename.pdf \&";
    system($command_txt2);
 }
 

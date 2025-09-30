@@ -47,8 +47,8 @@ TOExMipSol::MIP<Scalar,Int> construct_mip(const Matrix<Scalar>& F, const Matrix<
    // Initializing important mip attributes
    mip.linf = std::vector<bool>(numCols, true);	// true: variable i has no lower bound, false: variable i has lower bound
    mip.uinf = std::vector<bool>(numCols, true);	// true: variable i has no upper bound, false: variable i has upper bound
-   mip.lbounds = std::vector<Scalar>(numCols, 0);	// lower bound for variable i (if any)
-   mip.ubounds = std::vector<Scalar>(numCols, 0);	// upper bound for variable i (if any)
+   mip.lbounds = std::vector<Scalar>(numCols, zero_value<Scalar>());	// lower bound for variable i (if any)
+   mip.ubounds = std::vector<Scalar>(numCols, zero_value<Scalar>());	// upper bound for variable i (if any)
    mip.numbersystems = numbersystems;	// variable i is: G: Integer, B: Binary, R: Real
    mip.objfunc = objfunc;	// objective function (sparse)
    mip.matrix = std::vector<TOExMipSol::constraint<Scalar,Int>>();	// constraints (sparse)
@@ -192,8 +192,8 @@ public:
       } else {
          result.status = LP_status::valid;
          result.objective_value += Obj[0];
-         Vector<Rational> solution(dim-1, assignment.begin());
-         result.solution = ones_vector<Rational>(1) | solution;
+         Vector<Scalar> solution(dim-1, assignment.begin());
+         result.solution = ones_vector<Scalar>(1) | solution;
       }
       return result;
    }

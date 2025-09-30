@@ -29,12 +29,16 @@ namespace polymake { namespace common {
 
 namespace {
 
+// The bool `common_linear_subspace` indicates whether all input cells live in
+// the same linear subspace. If this is the case, all cells can be transformed
+// using the same transformation, reducing the number of calls to
+// `hermite_normal_form` to one.
 template<typename Func>
-bool inner(const Matrix<Rational>& C_in, const Array<Set<Int>>& F, bool common_linear_space, Func f){
-   if(common_linear_space){
-      Int rk = rank(C_in);
+bool inner(const Matrix<Rational>& C_in, const Array<Set<Int>>& F, bool common_linear_subspace, Func f){
+   if(common_linear_subspace){
       const Matrix<Integer> C(convert_to<Integer>(C_in));
       auto hnf = hermite_normal_form(C.minor(basis_rows(C),All));
+      Int rk = hnf.rank;
       const auto transform = hnf.companion.minor(All, sequence(0,hnf.rank));
 
       for (const auto& fi : F) {
@@ -49,8 +53,13 @@ bool inner(const Matrix<Rational>& C_in, const Array<Set<Int>>& F, bool common_l
 
       for (const auto& fi : F) {
          auto hnf = hermite_normal_form(C.minor(fi, All));
-         auto r = sequence(0, hnf.rank);
-         bool is_not_unimodular = fi.size() != hnf.rank || abs( det(hnf.hnf.minor(r,r)) ) != 1;
+         bool is_not_unimodular = fi.size() != hnf.rank;
+         for(Int i=0; i<hnf.rank && !is_not_unimodular; i++){
+            if(!abs_equal(hnf.hnf(i,i),1)){
+               is_not_unimodular = true;
+               break;
+            }
+         }
          if (f(is_not_unimodular)) {
             return false;
          }
@@ -63,18 +72,18 @@ bool inner(const Matrix<Rational>& C_in, const Array<Set<Int>>& F, bool common_l
 
 // coordinates are homogeneous, maximal cells not necessarily simplices
 // returns false if not a triangulation
-bool unimodular(const Matrix<Rational>& C_in, const Array<Set<Int>>& F, bool common_linear_space)
+bool unimodular(const Matrix<Rational>& C_in, const Array<Set<Int>>& F, bool common_linear_subspace)
 {
    auto f = [](bool b){return b;};
-   return inner(C_in, F, common_linear_space, f);
+   return inner(C_in, F, common_linear_subspace, f);
 }
 
 
-Int n_unimodular(const Matrix<Rational>& C_in, const Array<Set<Int>>& F, bool common_linear_space)
+Int n_unimodular(const Matrix<Rational>& C_in, const Array<Set<Int>>& F, bool common_linear_subspace)
 {
    Int n_unimodular = F.size();
    auto f = [&n_unimodular](bool b){n_unimodular-=b; return false;};
-   inner(C_in, F, common_linear_space, f);
+   inner(C_in, F, common_linear_subspace, f);
    return n_unimodular;
 }
 

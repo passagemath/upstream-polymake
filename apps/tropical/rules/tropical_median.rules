@@ -125,7 +125,7 @@ function facets_matrix<Scalar>(Matrix<Scalar>, Matrix<Scalar>) {
 
 # @category Phylogenetics
 # Computes the asymmetric tropical Fermat-Weber set.
-# See A. Comăneci, M. Joswig: Tropical medians by transportation, arXiv:2205.00036
+# See A. Comăneci, M. Joswig: Tropical medians by transportation, Math. Program. (2024); doi: 10.1007/s10107-023-01996-8.
 # @param Matrix V whose rows represent points in the tropical projective torus
 # @return polytope::Polytope
 # @example [application polytope] [prefer cdd] [require bundled:cdd] Computes the Fermat-Weber set of three points and prints its ordinary vertices.
@@ -172,7 +172,7 @@ user_function fw_set<Scalar>(Matrix<Scalar>) {
 
 # @category Phylogenetics
 # Returns the tropical median--the average of the tropical vertices of the asymmetric tropical Fermat-Weber set.
-# See A. Comăneci, M. Joswig: Tropical medians by transportation, arXiv:2205.00036
+# See A. Comăneci, M. Joswig: Tropical medians by transportation, Math. Program. (2024); doi: 10.1007/s10107-023-01996-8.
 # @param Matrix V whose rows represent points in the tropical projective torus
 # @return Vector
 # @example Computes the tropical median of five points.
@@ -243,7 +243,7 @@ user_function tropical_median<Scalar> (Matrix<Scalar>) {
 # @category Phylogenetics
 # Computes the tropical median consensus of given phylogenetic trees. They must have the same taxa.
 # It accepts only equidistant trees (see Section 7.2 from [C. Semple, M. Steel: Phylogenetics]).
-# The method is described in A. Comăneci, M. Joswig: Tropical medians by transportation, arXiv:2205.00036
+# See A. Comăneci, M. Joswig: Tropical medians by transportation, Math. Program. (2024); doi: 10.1007/s10107-023-01996-8.
 # @return PhylogeneticTree
 # @example The tropical median consensus of three phylogenetic trees.
 # > $T1 = new graph::PhylogeneticTree(NEWICK => "(H:30,(C:10,B:10):20):10,G:40;");

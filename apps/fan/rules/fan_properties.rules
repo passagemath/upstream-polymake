@@ -745,8 +745,8 @@ user_method cone($) : MAXIMAL_CONES {
          $c->LINEAR_SPAN=$lsn->minor($mclsn->[$i],All);
       }
    }
-   if (defined(my $mci=$self->lookup("MAXIMAL_CONES_INCIDENCES"))) {
-      $c->RAYS_IN_FACETS=$mci->[$i];
+   if (defined(my $mci=$self->lookup("MAXIMAL_CONES_INCIDENCES")) and defined(my $mc=$self->lookup("MAXIMAL_CONES"))) {
+      $c->RAYS_IN_FACETS=$mci->[$i]->minor(All,$mc->[$i]);
    }
    if (defined(my $mccd=$self->lookup("MAXIMAL_CONES_COMBINATORIAL_DIMS"))) {
       $c->COMBINATORIAL_DIM=$mccd->[$i];
@@ -838,7 +838,7 @@ object topaz::HyperbolicSurface {
    
    # The secondary fan of the hyperbolic surface.
    # The k-th maximal cone corresponds to the Delaunay triangulation obtained by applying the k-th flip word of [[FLIP_WORDS]].
-   # See M. Joswig, R. Löwe, and B. Springborn. Secondary fans and secondary polyhedra of punctured Riemann surfaces. arXiv:1708.08714.
+   # See M. Joswig, R. Löwe, and B. Springborn. Secondary fans and secondary polyhedra of punctured Riemann surfaces. Experimental Math. (2020); doi: 10.1080/10586458.
    property SECONDARY_FAN : PolyhedralFan<Rational>;
 
    rule SECONDARY_FAN, FLIP_WORDS : DCEL, PENNER_COORDINATES {

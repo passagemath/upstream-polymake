@@ -48,7 +48,7 @@ user_method VISUAL(%Visual::CovectorLattice::decorations, { seed => undef }) {
             push @s, ""; next;
          }
          my @covector_string = map {$_->size() == 0? "-" : join(" ", @{$_})} @{rows($this->COVECTORS->[$i])};
-         push @s, ($this->FACES->[$i])."\\\\( ".join(" , ",@covector_string)." )";
+         push @s, "{".($this->FACES->[$i])."\\\\( ".join(" , ",@covector_string)." )}";
       }
       $decor->{NodeLabels} = \@s;
    }

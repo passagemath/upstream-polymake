@@ -24,6 +24,7 @@
 #include "polymake/Set.h"
 #include "polymake/FacetList.h"
 #include "polymake/linalg.h"
+#include "polymake/polytope/canonicalize.h"
 
 namespace polymake { namespace fan {
 namespace {
@@ -96,6 +97,8 @@ BigObject fan_from_objects(const Array<BigObject>& all_cones, OptionSet options)
       BigObject cone = all_cones[c_i];
       Matrix<Coord> c_rays = cone.give("RAYS");
       project_to_orthogonal_complement(c_rays, lineality);
+      for (auto rit = entire(rows(c_rays)); !rit.at_end(); ++rit)
+         polytope::canonicalize_oriented(entire(*rit));
 
       auto ray_indices = get_indices(c_rays, rays);
 
@@ -127,6 +130,8 @@ BigObject fan_from_objects(const Array<BigObject>& all_cones, OptionSet options)
             BigObject inters(t, "INEQUALITIES", facets / facets2, "EQUATIONS", eqs / eqs2);
             Matrix<Coord> int_rays = inters.give("RAYS");
             project_to_orthogonal_complement(int_rays, lineality);
+            for (auto rit = entire(rows(int_rays)); !rit.at_end(); ++rit)
+               polytope::canonicalize_oriented(entire(*rit));
 
             auto int_indices = Set<Int>(get_indices(int_rays, rays, false, verbose));
             const Int n_int_rays = int_rays.rows();

@@ -27,13 +27,13 @@ you can specify its location on the command line:
 ./configure PERL=/path/to/my/new/perl [other options ...]
 .
       exit(1);
-   } elsif ($] >= 5.042) {
+   } elsif ($] >= 5.044) {
       print STDERR <<".";
 *************
 *** ERROR ***
 *************
 
-polymake has not been checked for compatibility with perl 5.42 or newer;
+polymake has not been checked for compatibility with perl 5.44 or newer;
 your perl interpreter says it is $].
 
 If you already have another (older) perl interpreter somewhere else, you can

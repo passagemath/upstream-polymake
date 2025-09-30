@@ -117,10 +117,12 @@ object Polytope {
 	}
 	weight 2.10;
 
-	rule DOME.VERTEX_COVECTORS : DOME.VERTICES, POINTS {
-		$this->DOME->VERTEX_COVECTORS = covectors_of_scalar_vertices($this->DOME->VERTICES, $this->POINTS);
-	}
-	weight 1.10;
+   rule DOME.VERTEX_COVECTORS : DOME.VERTICES, POINTS {
+      my $m = new Matrix<Scalar>($this->DOME->VERTICES);
+      canonicalize_vertices_to_leading_zero($m);
+      $this->DOME->VERTEX_COVECTORS = covectors_of_scalar_vertices($m, $this->POINTS);
+   }
+   weight 1.10;
 
    
   # In case [[VERTICES]] are known but [[POINTS]] are not, we set [[POINTS]] = [[VERTICES]].

@@ -63,18 +63,44 @@ property DELAUNAY_GRAPH : Graph;
 property ITERATED_DELAUNAY_GRAPH : Graph;
 
 
-# Graph of the crust as defined by Amenta, Bern, and Eppstein.
+# Graph of the crust, as defined in:
+#
+#  Amenta, Bern, and Eppstein: The crust and the β-skeleton: combinatorial curve reconstruction.
+#  Graphical Models and Image Processing 60(2), 1998, 125-135
+#
+# Polygonal reconstruction of a smooth planar curve from a finite set of samples.
+# Sampling rate of < 0.252 suffices.
+#
+# @example Reconstruct the unit circle from the vertices of a regular hexagon.
+# > $V = new VoronoiPolyhedron(SITES=>n_gon(6)->VERTICES);
+# > print $V->CRUST_GRAPH->ADJACENCY;
+# | {1 5}
+# | {0 2}
+# | {1 3}
+# | {2 4}
+# | {3 5}
+# | {0 4}
 
 property CRUST_GRAPH : Graph;
 
 
 # Graph of the nearest neighbor crust, as defined in:
 #
-#	T. K. Dey and P. Kumar: A simple provable algorithm for curve reconstruction.
-#	Proc. 10th. Annu. ACM-SIAM Sympos. Discrete Alg., 1999, 893-894.
+#  T. K. Dey and P. Kumar: A simple provable algorithm for curve reconstruction.
+#  Proc. 10th. Annu. ACM-SIAM Sympos. Discrete Alg., 1999, 893-894.
 #
 # Polygonal reconstruction of a smooth planar curve from a finite set of samples.
 # Sampling rate of <= 1/3 suffices.
+#
+# @example Reconstruct the unit circle from the vertices of a regular hexagon.
+# > $V = new VoronoiPolyhedron(SITES=>n_gon(6)->VERTICES);
+# > print $V->CRUST_GRAPH->ADJACENCY;
+# | {1 5}
+# | {0 2}
+# | {1 3}
+# | {2 4}
+# | {3 5}
+# | {0 4}
 
 property NN_CRUST_GRAPH : Graph;
 

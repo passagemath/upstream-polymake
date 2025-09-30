@@ -46,8 +46,8 @@ sub file_suffix { ".dot" }
 
 sub command {
    my ($self, $dotfile)=@_;
-   (my $psfile=$dotfile) =~ s/\.dot/.ps/;
-   $self->graphics->command . " -Tps -o$psfile $dotfile; $Postscript::viewer $psfile"
+   (my $pdffile=$dotfile) =~ s/\.dot/.pdf/;
+   $self->graphics->command . " -Tpdf -o$pdffile $dotfile; $Visual::pdfviewer $pdffile"
 }
 
 global_method graphviz.graph: draw(Visual::Graph) {
@@ -62,7 +62,7 @@ global_method graphviz.lattice: draw(Visual::Lattice) {
 
 prefer graphviz.lattice
 
-#  Writes to a dot file without Postscript conversion
+#  Writes to a dot file without PDF conversion
 
 package Graphviz::File::Writer;
 import Visual::FileWriter;
@@ -74,7 +74,7 @@ package application;
 # @category Visualization
 # Draw the given graph or face lattice object using [[wiki:external_software#graphviz|graphviz]] program
 # ''neato'' or ''dot'' respectively.
-# The output is rendered in PostScript format and fed into a viewer program, if one is configured.
+# The output is rendered in PDF format and fed into a viewer program, if one is configured.
 # If you prefer to produce another output format, please use the //File// option and call the ''neato''
 # or ''dot'' program manually.
 #

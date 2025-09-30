@@ -1,3 +1,22 @@
+=== polymake 4.15 ===
+
+-- graph --
+  * graphviz: use pdf instead of ps
+
+-- fan --
+  * check_fan: fix ray identification
+  * cone: fix incidences in some special cases
+  * HyperplaneArrangement: fix bugs for single cells
+
+-- polytope --
+  * MILP: allow non-rational coordinates
+
+-- topaz --
+  * unimodular: improvements, allow non-full-dimensional
+
+-- tropical --
+  * covectors: various fixes
+
 === polymake 4.14 ===
 
 -- distribution --

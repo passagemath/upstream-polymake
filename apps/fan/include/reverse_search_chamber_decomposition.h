@@ -114,6 +114,7 @@ class Node {
       }
       
       bool has_predecessor(const Node& pred) const {
+         if(!has_upneighbor()){ return false; }
          const auto& front = upNeighbors.front();
          return front.first == pred.vertex;
       }

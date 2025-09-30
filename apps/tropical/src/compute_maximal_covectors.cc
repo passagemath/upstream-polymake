@@ -29,8 +29,9 @@ namespace polymake { namespace tropical {
 template <typename Addition, typename Scalar>
 void compute_maximal_covectors(BigObject cone)
 {
-  Matrix<Rational> pseudovertices = cone.give("PSEUDOVERTICES");
-  IncidenceMatrix<> maximal_cells = cone.give("MAXIMAL_COVECTOR_CELLS");
+  BigObject dome = cone.give("DOME");
+  Matrix<Rational> pseudovertices = dome.give("VERTICES");
+  IncidenceMatrix<> maximal_cells = dome.give("MAXIMAL_COVECTOR_CELLS");
   Matrix<TropicalNumber<Addition, Scalar>> points = cone.give("POINTS");
 
   Matrix<Rational> interior_points(maximal_cells.rows(), pseudovertices.cols());

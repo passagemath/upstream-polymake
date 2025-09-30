@@ -55,6 +55,7 @@ sub vertexStylesToString {
     my $bdthickness = $self->source->VertexBorderThickness;
     my $labels = $self->source->VertexLabels;
     my $label_flag = (defined($labels) && $labels !~ $Visual::hidden_re && $labels ne "") ? 1 : 0;
+    my $alignment = $self->source->LabelAlignment;
 
     if (is_code($vcolors) || is_code($bdcolors) || is_code($bdthickness)) {
         $self->nodecode = 1; 
@@ -65,12 +66,14 @@ sub vertexStylesToString {
             my $bdthick = is_code($bdthickness) ? $bdthickness->($i) : $bdthickness;
             $optionstring .= "fill=$colid, draw=$bdcolid,";
             $optionstring .= ", line width=$bdthick"."pt" if (defined($bdthick));
+            $optionstring .= "align=$alignment," if defined($alignment);
             $text .= $self->tikzstyle("vertexstyle$id\_$i",$optionstring);
         }
     } else {
         my $optionstring = "inner sep=2pt, rectangle, rounded corners=3pt,";
         $optionstring .= "fill=$vcolors, draw=$bdcolors,";
         $optionstring .= ", line width=$bdthick"."pt" if (defined($bdthickness));
+        $optionstring .= "align=$alignment," if defined($alignment);
         $text .= $self->tikzstyle("vertexstyle$id",$optionstring);
     }
     return $text;

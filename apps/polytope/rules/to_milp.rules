@@ -24,6 +24,10 @@ rule to.integer_points : LATTICE_POINTS_GENERATORS :  FACETS | INEQUALITIES, AFF
 precondition : BOUNDED;
 weight 5.20;
 
+}
+
+object Polytope {
+
 # It is not necessary to require EQUATIONS or AFFINE_HULL, those are dealt with
 # via lookup in the C++ client.
 rule to.milp: MILP.MAXIMAL_VALUE, MILP.MAXIMAL_SOLUTION : MILP.LINEAR_OBJECTIVE, FACETS | INEQUALITIES {
